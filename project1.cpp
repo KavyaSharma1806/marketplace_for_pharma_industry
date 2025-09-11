@@ -42,6 +42,28 @@ public:
     }
 };
 
+class person
+{
+private:
+    Medicine medicine[50];
+};
+
+class records : public person
+{
+public:
+    Medicine *logs;
+
+private:
+    records() : person()
+    {
+        logs = new Medicine[50];
+        for (int i = 0; i < 50; i++)
+        {
+            logs[i] = Medicine();
+        }
+    }
+};
+
 class Shop
 {
 public:
