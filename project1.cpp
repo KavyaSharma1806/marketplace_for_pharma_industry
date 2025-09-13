@@ -25,6 +25,8 @@ public:
         quantity = q;
     }
 
+     ~Medicine(){}
+
     void display()
     {
         cout << name << " - $" << fixed << setprecision(2) << price
@@ -42,13 +44,13 @@ public:
     }
 };
 
-class person
+class person // abstracted
 {
 private:
     Medicine medicine[50];
 };
 
-class records : public person
+class records : public person // inheritqance
 {
 public:
     Medicine *logs;
@@ -63,7 +65,6 @@ private:
         }
     }
 };
-
 class Shop
 {
 public:
@@ -82,6 +83,8 @@ public:
         name = shopName;
         medicineCount = 0;
     }
+
+    ~Shop(){}
 
     void addMedicine(string medName, double price, int quantity)
     {
@@ -117,7 +120,7 @@ public:
         if (index != -1 && medicines[index].canBuy(quantity))
         {
             double cost = medicines[index].price * quantity;
-            cout << "Cost: $" << fixed << setprecision(2) << cost << "\n";
+            cout << "Cost: $" <<cost << "\n";
             cout << "Confirm purchase? (y/n): ";
             char choice;
             cin >> choice;
@@ -142,7 +145,7 @@ public:
     {
         name = "Main Wholesaler";
     }
-
+    ~Wholesaler(){}
     double getPrice(string medName)
     {
         // Simple pricing - just return a default price
@@ -184,7 +187,7 @@ public:
         shopCount = 5;
 
         shops[0] = Shop("MediCare");
-        shops[0].addMedicine("Paracetamol", 5.50, 50);
+        shops[0].addMedicine("paracetamol", 5.50, 50);
         shops[0].addMedicine("Ibuprofen", 8.50, 30);
         shops[0].addMedicine("Aspirin", 6.50, 40);
 
@@ -309,7 +312,6 @@ void showMenu()
     cout << "Choose: ";
 }
 
-// Main function
 int main()
 {
     Marketplace market;
@@ -346,4 +348,3 @@ int main()
         return 0;
     }
 }
-
