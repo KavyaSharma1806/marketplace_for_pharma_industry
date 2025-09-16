@@ -6,32 +6,26 @@ using namespace std;
 
 class Medicine
 {
-public:
+private:
     string name;
     double price;
     int quantity;
 
-    Medicine()
-    {
-        name = "";
-        price = 0;
-        quantity = 0;
-    }
-
-    Medicine(string n, double p, int q)
+public:
+    Medicine(string n = "", double p = 0, int q = 0)
     {
         name = n;
         price = p;
         quantity = q;
     }
 
-     ~Medicine(){}
+    ~Medicine() {}
 
-    void display()
-    {
-        cout << name << " - $" << fixed << setprecision(2) << price
-             << " - Stock: " << quantity << "\n";
-    }
+    string getName() const { return name; }
+    double getPrice() const { return price; }
+    int getQuantity() const { return quantity; }
+
+    friend void display(const Medicine &m);
 
     bool canBuy(int amount)
     {
@@ -44,6 +38,13 @@ public:
     }
 };
 
+void display(const Medicine &m)
+{
+    cout << m.name << " - $" << fixed << setprecision(2) << m.price
+         << " - Stock: " << m.quantity << "\n";
+}
+
+// #medicine class
 class person // abstracted
 {
 private:
@@ -84,9 +85,9 @@ public:
         medicineCount = 0;
     }
 
-    ~Shop(){}
+    ~Shop() {}
 
-    void addMedicine(string medName, double price, int quantity)
+    void addMedicine(string medName, double price, int quantity = 1)
     {
         medicines[medicineCount] = Medicine(medName, price, quantity);
         medicineCount++;
@@ -96,7 +97,7 @@ public:
     {
         for (int i = 0; i < medicineCount; i++)
         {
-            if (medicines[i].name == medName)
+            if (medicines[i].getName() == medName)
             {
                 return i;
             }
@@ -110,17 +111,17 @@ public:
         for (int i = 0; i < medicineCount; i++)
         {
             cout << "  ";
-            medicines[i].display();
+            display(medicines[i]);
         }
     }
 
-    bool buyMedicine(string medName, int quantity)
+    bool buyMedicine(string medName, int quantity = 1)
     {
         int index = findMedicine(medName);
         if (index != -1 && medicines[index].canBuy(quantity))
         {
-            double cost = medicines[index].price * quantity;
-            cout << "Cost: $" <<cost << "\n";
+            double cost = medicines[index].getPrice() * quantity;
+            cout << "Cost: $" << cost << "\n";
             cout << "Confirm purchase? (y/n): ";
             char choice;
             cin >> choice;
@@ -145,8 +146,8 @@ public:
     {
         name = "Main Wholesaler";
     }
-    ~Wholesaler(){}
-    double getPrice(string medName)
+    ~Wholesaler() {}
+    double getPrice(string medName = "Generic")
     {
         // Simple pricing - just return a default price
         return 10.0;
@@ -235,8 +236,8 @@ public:
                 Medicine &med = shops[i].medicines[medIndex];
 
                 cout << "\nFound at " << shops[i].name << "\n";
-                cout << "Price: $" << fixed << setprecision(2) << med.price << " per unit\n";
-                cout << "Available: " << med.quantity << " units\n";
+                cout << "Price: $" << fixed << setprecision(2) << med.getPrice() << " per unit\n";
+                cout << "Available: " << med.getQuantity() << " units\n";
 
                 if (med.canBuy(quantity))
                 {
@@ -278,8 +279,8 @@ public:
             {
                 found = true;
                 cout << shops[i].name << " - $"
-                     << fixed << setprecision(2) << shops[i].medicines[index].price
-                     << " - Stock: " << shops[i].medicines[index].quantity << "\n";
+                     << fixed << setprecision(2) << shops[i].medicines[index].getPrice()
+                     << " - Stock: " << shops[i].medicines[index].getQuantity() << "\n";
             }
         }
 
@@ -314,7 +315,7 @@ void showMenu()
 
 int main()
 {
-    Marketplace market;
+    Marketplace *market = new Marketplace();
     int choice;
 
     cout << "Welcome to Medicine Marketplace!\n";
@@ -327,13 +328,13 @@ int main()
         switch (choice)
         {
         case 1:
-            market.orderMedicine();
+            market->orderMedicine();
             break;
         case 2:
-            market.searchMedicine();
+            market->searchMedicine();
             break;
         case 3:
-            market.showAllShops();
+            market->showAllShops();
             break;
         case 4:
             cout << "Thank you! Goodbye!\n";
@@ -344,7 +345,8 @@ int main()
         }
         if (choice == 4)
             break;
-
-        return 0;
     }
+
+    delete market;
+    return 0;
 }
