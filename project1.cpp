@@ -7,14 +7,20 @@ using namespace std;
 
 class Medicine
 {
+<<<<<<< HEAD
     // MARK: ENCAPSULATION 
+=======
+>>>>>>> 41268375bec9c14ce0789d52915e821e863119e0
 private:
     string name;
     double price;
     int quantity;
 
 public:
+<<<<<<< HEAD
     // MARK: CONSTRUCTOR
+=======
+>>>>>>> 41268375bec9c14ce0789d52915e821e863119e0
     Medicine(string n = "", double p = 0, int q = 0)
     {
         name = n;
@@ -22,14 +28,20 @@ public:
         quantity = q;
     }
 
+<<<<<<< HEAD
     // MARK: DESTRUCTOR 
+=======
+>>>>>>> 41268375bec9c14ce0789d52915e821e863119e0
     ~Medicine() {}
 
     string getName() const { return name; }
     double getPrice() const { return price; }
     int getQuantity() const { return quantity; }
 
+<<<<<<< HEAD
     // MARK: FRIEND FUNCTION
+=======
+>>>>>>> 41268375bec9c14ce0789d52915e821e863119e0
     friend void display(const Medicine &m);
 
     bool canBuy(int amount)
@@ -323,8 +335,11 @@ void showMenu()
 
 int main()
 {
+<<<<<<< HEAD
     // - OOP Concept : Creating objects using new operator
     // MARK: INSTANTIATION
+=======
+>>>>>>> 41268375bec9c14ce0789d52915e821e863119e0
     Marketplace *market = new Marketplace();
     int choice;
 
