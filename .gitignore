@@ -1,0 +1,19 @@
+# Explanation:
+# The line `*.exe` in a `.gitignore` file is correct for ignoring all files with the `.exe` extension in your repository.
+# However, the use of `//` for comments is incorrect in `.gitignore` files.
+# In `.gitignore`, comments should start with `#`, not `//`.
+# 
+# What is wrong:
+# - Using `//` for comments is not recognized by `.gitignore` and may cause issues.
+# 
+# What is happening:
+# - The line `*.exe` will work, but the `// Start of Selection` and `// End of Selection` lines will not be treated as comments by `.gitignore`.
+# 
+# Ways to fix:
+# - Replace `//` with `#` for comments in `.gitignore`.
+# 
+# Fixed code:
+
+# Start of Selection
+*.exe
+# End of Selection
