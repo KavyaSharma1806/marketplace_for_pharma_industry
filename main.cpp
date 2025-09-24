@@ -9,10 +9,9 @@ void showMenu()
     cout << "1. Order Medicine\n";
     cout << "2. Search for a Medicine\n";
     cout << "3. Show All Shop Inventories\n";
-    cout << "4. Add Shop (friend fn)\n";
-    cout << "5. Add Item + Save (ofstream)\n";
-    cout << "6. Run Dummy Feature (abstraction)\n";
-    cout << "7. Exit\n";
+    cout << "4. Add Shop\n";
+    cout << "5. Add Item + Save\n";
+    cout << "6. Exit\n";
     cout << "===============================\n";
     cout << "Choose an option: ";
 }
@@ -75,13 +74,8 @@ int main()
             market.addMedicineAndPersist(index, med, price, qty);
             break;
         }
+       
         case 6:
-        {
-            DummyFeature feature;
-            feature.run(market);
-            break;
-        }
-        case 7:
             break;
         default:
             cout << "Invalid choice! Please try again." << endl;
