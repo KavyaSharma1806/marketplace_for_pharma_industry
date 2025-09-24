@@ -204,7 +204,12 @@ void Marketplace::addMedicineAndPersist(int shopIndex, string medName, double pr
     cout << "Item persisted to " << filePath << "\n";
 }
 
-// MARK: Abstraction + Polymorphism
+void Feature::run(Marketplace &market)
+{
+    // Base class feature implementation.
+}
+
+// MARK: Abstraction
 void DummyFeature::run(Marketplace &market)
 {
     cout << "[DummyFeature] Marketplace currently has " << market.getShopCount() << " shops." << "\n";

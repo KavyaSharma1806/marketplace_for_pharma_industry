@@ -50,19 +50,19 @@ public:
     bool buyMedicine(string medName, int quantity = 1);
 };
 
-// MARK: Abstraction (Pure Virtual)
+// MARK: Abstraction
 class Feature
 {
 public:
-    virtual ~Feature() {}
-    virtual void run(class Marketplace &market) = 0;
+    ~Feature() {}
+    void run(class Marketplace &market);
 };
 
-// MARK: Inheritance + Polymorphism (override)
+// MARK: Inheritance
 class DummyFeature : public Feature
 {
 public:
-    void run(class Marketplace &market) override;
+    void run(class Marketplace &market);
 };
 
 // MARK: Composition (has-a Shops) + Encapsulation
