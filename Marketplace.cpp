@@ -203,14 +203,3 @@ void Marketplace::addMedicineAndPersist(int shopIndex, string medName, double pr
     out.close();
     cout << "Item persisted to " << filePath << "\n";
 }
-
-void Feature::run(Marketplace &market)
-{
-    // Base class feature implementation.
-}
-
-// MARK: Abstraction
-void DummyFeature::run(Marketplace &market)
-{
-    cout << "[DummyFeature] Marketplace currently has " << market.getShopCount() << " shops." << "\n";
-}
