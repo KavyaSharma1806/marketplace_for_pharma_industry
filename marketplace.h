@@ -58,12 +58,6 @@ public:
     void run(class Marketplace &market);
 };
 
-// MARK: Inheritance
-class DummyFeature : public Feature
-{
-public:
-    void run(class Marketplace &market);
-};
 
 // MARK: Composition (has-a Shops) + Encapsulation
 class Marketplace
