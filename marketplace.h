@@ -4,6 +4,7 @@
 #include <string>
 #include <iomanip>
 #include <fstream>
+#include <sstream>
 
 using namespace std;
 // MARK: Encapsulation
@@ -58,7 +59,6 @@ public:
     void run(class Marketplace &market);
 };
 
-
 // MARK: Composition (has-a Shops) + Encapsulation
 class Marketplace
 {
@@ -75,6 +75,7 @@ public:
     void showAllShops() const;
 
     void addMedicineAndPersist(int shopIndex, string medName, double price, int quantity, const string &filePath = "inventory.csv");
+    void loadInventoryFromFile(const string &filePath = "inventory.csv");
 
     // MARK: Accessors
     int getShopCount() const { return shopCount; }

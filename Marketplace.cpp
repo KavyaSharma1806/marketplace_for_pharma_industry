@@ -124,7 +124,8 @@ void Marketplace::orderMedicine()
     string medName;
     int quantity;
     std::cout << "\nEnter medicine name: ";
-    std::cin >> medName;
+    std::cin.ignore();
+    getline(std::cin, medName);
     std::cout << "Enter quantity: ";
     std::cin >> quantity;
 
@@ -153,7 +154,8 @@ void Marketplace::searchMedicine() const
 {
     string medName;
     std::cout << "\nEnter medicine name to search: ";
-    std::cin >> medName;
+    std::cin.ignore();
+    getline(std::cin, medName);
 
     std::cout << "\nSearch Results:\n";
     bool found = false;
@@ -202,4 +204,69 @@ void Marketplace::addMedicineAndPersist(int shopIndex, string medName, double pr
     out << shops[shopIndex].name << "," << medName << "," << fixed << setprecision(2) << price << "," << quantity << "\n";
     out.close();
     cout << "Item persisted to " << filePath << "\n";
+}
+
+void Marketplace::loadInventoryFromFile(const string &filePath)
+{
+    ifstream in(filePath);
+    if (!in)
+    {
+        cout << "Could not open " << filePath << " for reading. Starting with default inventory." << "\n";
+        return;
+    }
+
+    string line;
+    while (getline(in, line))
+    {
+        if (line.empty())
+            continue; // Skip empty lines
+
+        stringstream ss(line);
+        string shopName, medName, priceStr, qtyStr;
+
+        if (getline(ss, shopName, ',') &&
+            getline(ss, medName, ',') &&
+            getline(ss, priceStr, ',') &&
+            getline(ss, qtyStr))
+        {
+            if (medName.empty() || priceStr.empty() || qtyStr.empty())
+                continue; // Skip invalid entries
+
+            try
+            {
+                double price = stod(priceStr);
+                int quantity = stoi(qtyStr);
+
+                // Find or create shop
+                int shopIndex = -1;
+                for (int i = 0; i < shopCount; i++)
+                {
+                    if (shops[i].name == shopName)
+                    {
+                        shopIndex = i;
+                        break;
+                    }
+                }
+
+                if (shopIndex == -1 && shopCount < 5)
+                {
+                    // Create new shop
+                    shops[shopCount] = Shop(shopName);
+                    shopIndex = shopCount;
+                    shopCount++;
+                }
+
+                if (shopIndex != -1)
+                {
+                    shops[shopIndex].addMedicine(medName, price, quantity);
+                }
+            }
+            catch (const exception &e)
+            {
+                cout << "Skipping invalid line: " << line << "\n";
+            }
+        }
+    }
+    in.close();
+    cout << "Inventory loaded from " << filePath << "\n";
 }
