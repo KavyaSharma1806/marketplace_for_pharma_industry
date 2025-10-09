@@ -36,19 +36,28 @@ void display(const Medicine &m);
 
 class Shop
 {
+private:
+    Medicine *medicines;
+    int capacity;
+    int medicineCount;
+
 public:
     string name;
-    Medicine medicines[50];
-    int medicineCount;
 
     Shop();
     Shop(string shopName);
+    Shop(const Shop &other);            // Copy constructor
+    Shop &operator=(const Shop &other); // Assignment operator
     ~Shop();
 
     void addMedicine(string medName, double price, int quantity = 1);
     int findMedicine(string medName) const;
     void showInventory() const;
     bool buyMedicine(string medName, int quantity = 1);
+
+    // Getter methods for accessing medicines
+    const Medicine &getMedicine(int index) const;
+    int getMedicineCount() const;
 };
 
 // MARK: Abstraction
