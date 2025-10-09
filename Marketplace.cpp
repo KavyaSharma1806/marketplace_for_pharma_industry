@@ -29,18 +29,77 @@ Shop::Shop()
 {
     name = "";
     medicineCount = 0;
+    capacity = 10; // Initial capacity
+    medicines = new Medicine[capacity];
 }
 
 Shop::Shop(string shopName)
 {
     name = shopName;
     medicineCount = 0;
+    capacity = 10; // Initial capacity
+    medicines = new Medicine[capacity];
 }
 
-Shop::~Shop() {}
+Shop::Shop(const Shop &other)
+{
+    name = other.name;
+    medicineCount = other.medicineCount;
+    capacity = other.capacity;
+    medicines = new Medicine[capacity];
+
+    // Copy all medicines
+    for (int i = 0; i < medicineCount; i++)
+    {
+        medicines[i] = other.medicines[i];
+    }
+}
+
+Shop &Shop::operator=(const Shop &other)
+{
+    if (this != &other) // Avoid self-assignment
+    {
+        // Delete existing medicines
+        delete[] medicines;
+
+        // Copy data
+        name = other.name;
+        medicineCount = other.medicineCount;
+        capacity = other.capacity;
+        medicines = new Medicine[capacity];
+
+        // Copy all medicines
+        for (int i = 0; i < medicineCount; i++)
+        {
+            medicines[i] = other.medicines[i];
+        }
+    }
+    return *this;
+}
+
+Shop::~Shop()
+{
+    delete[] medicines;
+}
 
 void Shop::addMedicine(string medName, double price, int quantity)
 {
+    if (medicineCount >= capacity)
+    {
+        int newCapacity = capacity * 2;
+        Medicine *newMedicines = new Medicine[newCapacity];
+
+        // Copy existing medicines
+        for (int i = 0; i < medicineCount; i++)
+        {
+            newMedicines[i] = medicines[i];
+        }
+
+        delete[] medicines;
+        medicines = newMedicines;
+        capacity = newCapacity;
+    }
+
     medicines[medicineCount] = Medicine(medName, price, quantity);
     medicineCount++;
 }
@@ -61,16 +120,16 @@ void Shop::showInventory() const
     for (int i = 0; i < medicineCount; i++)
     {
         std::cout << "  ";
-        display(medicines[i]);
+        display(getMedicine(i));
     }
 }
 
 bool Shop::buyMedicine(string medName, int quantity)
 {
     int index = findMedicine(medName);
-    if (index != -1 && medicines[index].canBuy(quantity))
+    if (index != -1 && getMedicine(index).canBuy(quantity))
     {
-        double cost = medicines[index].getPrice() * quantity;
+        double cost = getMedicine(index).getPrice() * quantity;
         std::cout << "Cost: $" << fixed << setprecision(2) << cost << "\n";
         std::cout << "Confirm purchase? (y/n): ";
         char choice;
@@ -83,6 +142,17 @@ bool Shop::buyMedicine(string medName, int quantity)
         }
     }
     return false;
+}
+
+// Getter methods for accessing medicines
+const Medicine &Shop::getMedicine(int index) const
+{
+    return medicines[index];
+}
+
+int Shop::getMedicineCount() const
+{
+    return medicineCount;
 }
 
 // MARK: Constructor/Destructor
@@ -137,8 +207,8 @@ void Marketplace::orderMedicine()
         {
             found = true;
             std::cout << "\nFound at " << shops[i].name << "\n";
-            std::cout << "Price: $" << fixed << setprecision(2) << shops[i].medicines[idx].getPrice() << " per unit\n";
-            std::cout << "Available: " << shops[i].medicines[idx].getQuantity() << " units\n";
+            std::cout << "Price: $" << fixed << setprecision(2) << shops[i].getMedicine(idx).getPrice() << " per unit\n";
+            std::cout << "Available: " << shops[i].getMedicine(idx).getQuantity() << " units\n";
             if (shops[i].buyMedicine(medName, quantity))
                 return;
         }
@@ -166,8 +236,8 @@ void Marketplace::searchMedicine() const
         {
             found = true;
             std::cout << shops[i].name << " - $" << fixed << setprecision(2)
-                      << shops[i].medicines[index].getPrice()
-                      << " - Stock: " << shops[i].medicines[index].getQuantity() << "\n";
+                      << shops[i].getMedicine(index).getPrice()
+                      << " - Stock: " << shops[i].getMedicine(index).getQuantity() << "\n";
         }
     }
     if (!found)
