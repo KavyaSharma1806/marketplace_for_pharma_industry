@@ -20,11 +20,12 @@ int main()
 {
     // MARK: Object Creation
     Marketplace market;
+    market.loadInventoryFromFile(); 
     int choice = 0;
 
     cout << "Welcome to the Medicine Marketplace!\n";
 
-    while (choice != 7)
+    while (choice != 6)
     {
         showMenu();
         cin >> choice;
@@ -64,17 +65,41 @@ int main()
             double price;
             int qty;
             cout << "Enter shop index (0-" << (market.getShopCount() - 1) << "): ";
-            cin >> index;
+            if (!(cin >> index) || index < 0 || index >= market.getShopCount())
+            {
+                cout << "Invalid shop index!" << endl;
+                cin.clear();
+                cin.ignore(10000, '\n');
+                break;
+            }
             cout << "Medicine name: ";
-            cin >> med;
+            cin.ignore();
+            getline(cin, med);
+            if (med.empty())
+            {
+                cout << "Medicine name cannot be empty!" << endl;
+                break;
+            }
             cout << "Price: ";
-            cin >> price;
+            if (!(cin >> price) || price < 0)
+            {
+                cout << "Invalid price!" << endl;
+                cin.clear();
+                cin.ignore(10000, '\n');
+                break;
+            }
             cout << "Quantity: ";
-            cin >> qty;
+            if (!(cin >> qty) || qty < 0)
+            {
+                cout << "Invalid quantity!" << endl;
+                cin.clear();
+                cin.ignore(10000, '\n');
+                break;
+            }
             market.addMedicineAndPersist(index, med, price, qty);
             break;
         }
-       
+
         case 6:
             break;
         default:
