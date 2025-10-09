@@ -24,6 +24,25 @@ void display(const Medicine &m)
     std::cout << m << "\n";
 }
 
+Tablet::Tablet(const string &n, double p, int q) : Medicine(n, p, q) {}
+Tablet::~Tablet() {}
+void Tablet::displayInfo() const
+{
+    cout << "[Tablet] ";
+    Medicine::displayInfo();
+}
+string Tablet::getCategory() const { return "Tablet"; }
+
+// ========================= Syrup ========================= //
+Syrup::Syrup(const string &n, double p, int q) : Medicine(n, p, q) {}
+Syrup::~Syrup() {}
+void Syrup::displayInfo() const
+{
+    cout << "[Syrup]  ";
+    Medicine::displayInfo();
+}
+string Syrup::getCategory() const { return "Syrup"; }
+
 // MARK: Constructor/Destructor
 Shop::Shop()
 {

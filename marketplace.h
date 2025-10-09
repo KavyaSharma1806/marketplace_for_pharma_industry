@@ -32,6 +32,24 @@ public:
     friend ostream &operator<<(ostream &os, const Medicine &m);
 };
 
+class Tablet : public Medicine // NEW
+{
+public:
+    Tablet(const string &n = "", double p = 0.0, int q = 0); // NEW
+    virtual ~Tablet(); // NEW
+    virtual void displayInfo() const override; // NEW
+    virtual string getCategory() const override; // NEW
+};
+
+class Syrup : public Medicine // NEW
+{
+public:
+    Syrup(const string &n = "", double p = 0.0, int q = 0); // NEW
+    virtual ~Syrup(); // NEW
+    virtual void displayInfo() const override; // NEW
+    virtual string getCategory() const override; // NEW
+};
+
 void display(const Medicine &m);
 
 class Shop
