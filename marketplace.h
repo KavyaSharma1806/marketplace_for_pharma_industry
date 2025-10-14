@@ -14,18 +14,24 @@ private:
     string name;
     double price;
     int quantity;
+    string type; // Tablet, Syrup, General
 
 public:
     // MARK: Constructor/Destructor
-    Medicine(string n = "", double p = 0, int q = 0);
+    Medicine(string n = "", double p = 0, int q = 0, string t = "General");
     ~Medicine();
 
     string getName() const;
     double getPrice() const;
     int getQuantity() const;
+    string getType() const { return type; }
 
     bool canBuy(int amount) const;
     void reduceStock(int amount);
+
+    // NEW: virtual hooks so derived types can override behavior
+    virtual void displayInfo() const;   // prints a short representation
+    virtual string getCategory() const; // returns category name
 
     // MARK: Friend + Operator Overload
     friend void display(const Medicine &m);
@@ -36,18 +42,18 @@ class Tablet : public Medicine // NEW
 {
 public:
     Tablet(const string &n = "", double p = 0.0, int q = 0); // NEW
-    virtual ~Tablet(); // NEW
-    virtual void displayInfo() const override; // NEW
-    virtual string getCategory() const override; // NEW
+    virtual ~Tablet();                                       // NEW
+    virtual void displayInfo() const override;               // NEW
+    virtual string getCategory() const override;             // NEW
 };
 
 class Syrup : public Medicine // NEW
 {
 public:
     Syrup(const string &n = "", double p = 0.0, int q = 0); // NEW
-    virtual ~Syrup(); // NEW
-    virtual void displayInfo() const override; // NEW
-    virtual string getCategory() const override; // NEW
+    virtual ~Syrup();                                       // NEW
+    virtual void displayInfo() const override;              // NEW
+    virtual string getCategory() const override;            // NEW
 };
 
 void display(const Medicine &m);
@@ -68,7 +74,7 @@ public:
     Shop &operator=(const Shop &other); // Assignment operator
     ~Shop();
 
-    void addMedicine(string medName, double price, int quantity = 1);
+    void addMedicine(string medName, double price, int quantity = 1, string type = "General");
     int findMedicine(string medName) const;
     void showInventory() const;
     bool buyMedicine(string medName, int quantity = 1);
@@ -101,7 +107,7 @@ public:
     void searchMedicine() const;
     void showAllShops() const;
 
-    void addMedicineAndPersist(int shopIndex, string medName, double price, int quantity, const string &filePath = "inventory.csv");
+    void addMedicineAndPersist(int shopIndex, string medName, double price, int quantity, const string &type, const string &filePath = "inventory.csv");
     void loadInventoryFromFile(const string &filePath = "inventory.csv");
 
     // MARK: Accessors

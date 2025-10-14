@@ -3,7 +3,7 @@
 using namespace std;
 
 // MARK: Constructor/Destructor
-Medicine::Medicine(string n, double p, int q) : name(n), price(p), quantity(q) {}
+Medicine::Medicine(string n, double p, int q, string t) : name(n), price(p), quantity(q), type(t) {}
 Medicine::~Medicine() {}
 string Medicine::getName() const { return name; }
 double Medicine::getPrice() const { return price; }
@@ -15,7 +15,7 @@ void Medicine::reduceStock(int amount) { quantity -= amount; }
 ostream &operator<<(ostream &os, const Medicine &m)
 {
     os << m.name << " - $" << fixed << setprecision(2) << m.price
-       << " - Stock: " << m.quantity;
+       << " - Stock: " << m.quantity << " - Type: " << m.type;
     return os;
 }
 
@@ -24,21 +24,35 @@ void display(const Medicine &m)
     std::cout << m << "\n";
 }
 
-Tablet::Tablet(const string &n, double p, int q) : Medicine(n, p, q) {}
+// NEW: base class virtual implementations
+void Medicine::displayInfo() const
+{
+    // default display uses operator<< output
+    std::cout << *this << "\n";
+}
+
+string Medicine::getCategory() const
+{
+    return "Medicine";
+}
+
+Tablet::Tablet(const string &n, double p, int q) : Medicine(n, p, q, "Tablet") {}
 Tablet::~Tablet() {}
 void Tablet::displayInfo() const
 {
     cout << "[Tablet] ";
+    // call base implementation to print rest
     Medicine::displayInfo();
 }
 string Tablet::getCategory() const { return "Tablet"; }
 
 // ========================= Syrup ========================= //
-Syrup::Syrup(const string &n, double p, int q) : Medicine(n, p, q) {}
+Syrup::Syrup(const string &n, double p, int q) : Medicine(n, p, q, "Syrup") {}
 Syrup::~Syrup() {}
 void Syrup::displayInfo() const
 {
     cout << "[Syrup]  ";
+    // call base implementation to print rest
     Medicine::displayInfo();
 }
 string Syrup::getCategory() const { return "Syrup"; }
@@ -101,7 +115,7 @@ Shop::~Shop()
     delete[] medicines;
 }
 
-void Shop::addMedicine(string medName, double price, int quantity)
+void Shop::addMedicine(string medName, double price, int quantity, string type)
 {
     if (medicineCount >= capacity)
     {
@@ -119,7 +133,7 @@ void Shop::addMedicine(string medName, double price, int quantity)
         capacity = newCapacity;
     }
 
-    medicines[medicineCount] = Medicine(medName, price, quantity);
+    medicines[medicineCount] = Medicine(medName, price, quantity, type);
     medicineCount++;
 }
 
@@ -180,16 +194,16 @@ Marketplace::Marketplace()
     shopCount = 3;
 
     shops[0] = Shop("MediCare");
-    shops[0].addMedicine("Paracetamol", 5.50, 50);
-    shops[0].addMedicine("Ibuprofen", 8.50, 30);
+    shops[0].addMedicine("Paracetamol", 5.50, 50, "Tablet");
+    shops[0].addMedicine("Ibuprofen", 8.50, 30, "Tablet");
 
     shops[1] = Shop("HealthPlus");
-    shops[1].addMedicine("Amoxicillin", 16.00, 25);
-    shops[1].addMedicine("Cetirizine", 12.50, 20);
+    shops[1].addMedicine("Amoxicillin", 16.00, 25, "Tablet");
+    shops[1].addMedicine("Cetirizine", 12.50, 20, "Tablet");
 
     shops[2] = Shop("QuickMeds");
-    shops[2].addMedicine("Metformin", 19.00, 35);
-    shops[2].addMedicine("Insulin", 45.00, 10);
+    shops[2].addMedicine("Metformin", 19.00, 35, "Tablet");
+    shops[2].addMedicine("Insulin", 45.00, 10, "General");
 }
 
 Marketplace::~Marketplace() {}
@@ -274,7 +288,7 @@ void Marketplace::showAllShops() const
 }
 
 // MARK: File I/O + Composition interaction
-void Marketplace::addMedicineAndPersist(int shopIndex, string medName, double price, int quantity, const string &filePath)
+void Marketplace::addMedicineAndPersist(int shopIndex, string medName, double price, int quantity, const string &type, const string &filePath)
 {
     if (shopIndex < 0 || shopIndex >= shopCount)
     {
@@ -282,7 +296,7 @@ void Marketplace::addMedicineAndPersist(int shopIndex, string medName, double pr
         return;
     }
 
-    shops[shopIndex].addMedicine(medName, price, quantity);
+    shops[shopIndex].addMedicine(medName, price, quantity, type);
 
     ofstream out(filePath, ios::app);
     if (!out)
@@ -290,7 +304,7 @@ void Marketplace::addMedicineAndPersist(int shopIndex, string medName, double pr
         cout << "Failed to open " << filePath << " for writing." << "\n";
         return;
     }
-    out << shops[shopIndex].name << "," << medName << "," << fixed << setprecision(2) << price << "," << quantity << "\n";
+    out << shops[shopIndex].name << "," << medName << "," << fixed << setprecision(2) << price << "," << quantity << "," << type << "\n";
     out.close();
     cout << "Item persisted to " << filePath << "\n";
 }
@@ -311,13 +325,19 @@ void Marketplace::loadInventoryFromFile(const string &filePath)
             continue; // Skip empty lines
 
         stringstream ss(line);
-        string shopName, medName, priceStr, qtyStr;
+    string shopName, medName, priceStr, qtyStr, typeStr;
 
         if (getline(ss, shopName, ',') &&
             getline(ss, medName, ',') &&
             getline(ss, priceStr, ',') &&
-            getline(ss, qtyStr))
+            getline(ss, qtyStr, ',') )
         {
+            // Optional type field (5th column)
+            if (!getline(ss, typeStr))
+            {
+                typeStr = "General";
+            }
+
             if (medName.empty() || priceStr.empty() || qtyStr.empty())
                 continue; // Skip invalid entries
 
@@ -347,7 +367,7 @@ void Marketplace::loadInventoryFromFile(const string &filePath)
 
                 if (shopIndex != -1)
                 {
-                    shops[shopIndex].addMedicine(medName, price, quantity);
+                    shops[shopIndex].addMedicine(medName, price, quantity, typeStr);
                 }
             }
             catch (const exception &e)
