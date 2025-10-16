@@ -29,31 +29,29 @@ public:
     bool canBuy(int amount) const;
     void reduceStock(int amount);
 
-    // NEW: virtual hooks so derived types can override behavior
-    virtual void displayInfo() const;   // prints a short representation
-    virtual string getCategory() const; // returns category name
+    virtual void displayInfo() const;
+    virtual string getCategory() const;
 
-    // MARK: Friend + Operator Overload
     friend void display(const Medicine &m);
     friend ostream &operator<<(ostream &os, const Medicine &m);
 };
 
-class Tablet : public Medicine // NEW
+class Tablet : public Medicine
 {
 public:
-    Tablet(const string &n = "", double p = 0.0, int q = 0); // NEW
-    virtual ~Tablet();                                       // NEW
-    virtual void displayInfo() const override;               // NEW
-    virtual string getCategory() const override;             // NEW
+    Tablet(const string &n = "", double p = 0.0, int q = 0);
+    virtual ~Tablet();
+    virtual void displayInfo() const override;
+    virtual string getCategory() const override;
 };
 
-class Syrup : public Medicine // NEW
+class Syrup : public Medicine
 {
 public:
-    Syrup(const string &n = "", double p = 0.0, int q = 0); // NEW
-    virtual ~Syrup();                                       // NEW
-    virtual void displayInfo() const override;              // NEW
-    virtual string getCategory() const override;            // NEW
+    Syrup(const string &n = "", double p = 0.0, int q = 0);
+    virtual ~Syrup();
+    virtual void displayInfo() const override;
+    virtual string getCategory() const override;
 };
 
 void display(const Medicine &m);
@@ -61,7 +59,7 @@ void display(const Medicine &m);
 class Shop
 {
 private:
-    Medicine *medicines;
+    Medicine **medicines; // Array of pointers for polymorphism
     int capacity;
     int medicineCount;
 
@@ -80,7 +78,7 @@ public:
     bool buyMedicine(string medName, int quantity = 1);
 
     // Getter methods for accessing medicines
-    const Medicine &getMedicine(int index) const;
+    const Medicine *getMedicine(int index) const;
     int getMedicineCount() const;
 };
 
