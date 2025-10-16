@@ -129,7 +129,6 @@ void Shop::addMedicine(string medName, double price, int quantity, string type)
         int newCapacity = capacity * 2;
         Medicine **newMedicines = new Medicine *[newCapacity];
 
-        // Copy existing medicines
         for (int i = 0; i < medicineCount; i++)
         {
             newMedicines[i] = medicines[i];
@@ -335,6 +334,12 @@ void Marketplace::loadInventoryFromFile(const string &filePath)
     string line;
     while (getline(in, line))
     {
+//MARK: err handling
+        if (!in && !in.eof())
+        {
+            cout << "Error reading from " << filePath << "\n";
+            break;
+        }
         if (line.empty())
             continue; // Skip empty lines
 
