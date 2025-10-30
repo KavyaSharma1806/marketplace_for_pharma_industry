@@ -1,13 +1,14 @@
-MediCare,Paracetamol,5.50,50
-MediCare,Ibuprofen,8.50,30
-MediCare,Aspirin,6.50,40
-HealthPlus,Amoxicillin,16.00,25
-HealthPlus,Cetirizine,12.50,20
-HealthPlus,Paracetamol,5.25,60
-QuickMeds,Metformin,19.00,35
-QuickMeds,Insulin,45.00,10
-QuickMeds,Aspirin,7.00,50
-CityPharmacy,Vitamin-C,6.00,100
-CityPharmacy,Cough-Syrup,12.00,30
-CityPharmacy,Ibuprofen,8.25,45
-CityPharmacy,rahul,8.25,45MediCare,New Medicine,15.99,25
+MediCare,Paracetamol,5.50,50,Tablet
+MediCare,Ibuprofen,8.50,30,Tablet
+MediCare,Aspirin,6.50,40,Tablet
+HealthPlus,Amoxicillin,16.00,25,Tablet
+HealthPlus,Cetirizine,12.50,20,Tablet
+HealthPlus,Paracetamol,5.25,60,Tablet
+QuickMeds,Metformin,19.00,35,Tablet
+QuickMeds,Insulin,45.00,10,General
+QuickMeds,Aspirin,7.00,50,Tablet
+CityPharmacy,Vitamin-C,6.00,100,General
+CityPharmacy,Cough-Syrup,12.00,30,Syrup
+CityPharmacy,Ibuprofen,8.25,45,Tablet
+CityPharmacy,rahul,8.25,45,General
+MediCare,New Medicine,15.99,25,General

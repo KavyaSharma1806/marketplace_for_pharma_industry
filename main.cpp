@@ -20,7 +20,7 @@ int main()
 {
     // MARK: Object Creation
     Marketplace market;
-    market.loadInventoryFromFile(); 
+    market.loadInventoryFromFile();
     int choice = 0;
 
     cout << "Welcome to the Medicine Marketplace!\n";
@@ -64,6 +64,7 @@ int main()
             string med;
             double price;
             int qty;
+            string type;
             cout << "Enter shop index (0-" << (market.getShopCount() - 1) << "): ";
             if (!(cin >> index) || index < 0 || index >= market.getShopCount())
             {
@@ -96,7 +97,9 @@ int main()
                 cin.ignore(10000, '\n');
                 break;
             }
-            market.addMedicineAndPersist(index, med, price, qty);
+            cout << "Type (Tablet/Syrup/General): ";
+            cin >> type;
+            market.addMedicineAndPersist(index, med, price, qty, type);
             break;
         }
 
