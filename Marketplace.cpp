@@ -63,6 +63,11 @@ Shop::Shop()
     medicineCount = 0;
     capacity = 10; // Initial capacity
     medicines = new Medicine *[capacity];
+    if (!medicines)
+    {
+        cout << "Memory allocation failed for medicines array\n";
+        capacity = 0;
+    }
 }
 
 Shop::Shop(string shopName)
@@ -71,6 +76,11 @@ Shop::Shop(string shopName)
     medicineCount = 0;
     capacity = 10; // Initial capacity
     medicines = new Medicine *[capacity];
+    if (!medicines)
+    {
+        cout << "Memory allocation failed for medicines array\n";
+        capacity = 0;
+    }
 }
 
 Shop::Shop(const Shop &other)
@@ -79,11 +89,32 @@ Shop::Shop(const Shop &other)
     medicineCount = other.medicineCount;
     capacity = other.capacity;
     medicines = new Medicine *[capacity];
+    if (!medicines)
+    {
+        cout << "Memory allocation failed for medicines array\n";
+        capacity = 0;
+        medicineCount = 0;
+        return;
+    }
 
     // Copy all medicines (deep copy)
     for (int i = 0; i < medicineCount; i++)
     {
         medicines[i] = new Medicine(*other.medicines[i]);
+        if (!medicines[i])
+        {
+            cout << "Memory allocation failed for medicine " << i << "\n";
+            // Clean up previously allocated medicines
+            for (int j = 0; j < i; j++)
+            {
+                delete medicines[j];
+            }
+            delete[] medicines;
+            medicines = nullptr;
+            capacity = 0;
+            medicineCount = 0;
+            return;
+        }
     }
 }
 
@@ -103,11 +134,32 @@ Shop &Shop::operator=(const Shop &other)
         medicineCount = other.medicineCount;
         capacity = other.capacity;
         medicines = new Medicine *[capacity];
+        if (!medicines)
+        {
+            cout << "Memory allocation failed for medicines array\n";
+            capacity = 0;
+            medicineCount = 0;
+            return *this;
+        }
 
         // Copy all medicines (deep copy)
         for (int i = 0; i < medicineCount; i++)
         {
             medicines[i] = new Medicine(*other.medicines[i]);
+            if (!medicines[i])
+            {
+                cout << "Memory allocation failed for medicine " << i << "\n";
+                // Clean up previously allocated medicines
+                for (int j = 0; j < i; j++)
+                {
+                    delete medicines[j];
+                }
+                delete[] medicines;
+                medicines = nullptr;
+                capacity = 0;
+                medicineCount = 0;
+                return *this;
+            }
         }
     }
     return *this;
@@ -128,8 +180,12 @@ void Shop::addMedicine(string medName, double price, int quantity, string type)
     {
         int newCapacity = capacity * 2;
         Medicine **newMedicines = new Medicine *[newCapacity];
+        if (!newMedicines)
+        {
+            cout << "Memory allocation failed for expanding medicines array\n";
+            return;
+        }
 
-        // Copy existing medicines
         for (int i = 0; i < medicineCount; i++)
         {
             newMedicines[i] = medicines[i];
@@ -147,6 +203,12 @@ void Shop::addMedicine(string medName, double price, int quantity, string type)
         medicines[medicineCount] = new Syrup(medName, price, quantity);
     else
         medicines[medicineCount] = new Medicine(medName, price, quantity, type);
+
+    if (!medicines[medicineCount])
+    {
+        cout << "Memory allocation failed for medicine: " << medName << "\n";
+        return;
+    }
 
     medicineCount++;
 }
@@ -335,6 +397,12 @@ void Marketplace::loadInventoryFromFile(const string &filePath)
     string line;
     while (getline(in, line))
     {
+        // MARK: err handling
+        if (!in && !in.eof())
+        {
+            cout << "Error reading from " << filePath << "\n";
+            break;
+        }
         if (line.empty())
             continue; // Skip empty lines
 

@@ -1,0 +1,12 @@
+// YUML Class Diagram - Pharmacy Marketplace
+// Copy this code to https://yuml.me/diagram/plain/class/draw
+// Medicine hierarchy - Medicine at top, Tablet and Syrup below
+
+[Medicine],
+[Tablet]^-[Medicine],
+[Syrup]^-[Medicine],
+[Marketplace]++-contains>[Shop],
+[Shop]+-manages>[Medicine],
+[User]..>uses>[Marketplace],
+[Retailer]..>can sell>[Marketplace]
+

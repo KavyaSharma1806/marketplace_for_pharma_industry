@@ -30,15 +30,14 @@ int main()
         showMenu();
         cin >> choice;
 
-        if (cin.fail())
+        
+        if (choice < 1 || choice > 6)
         {
-            cout << "Invalid input! Please enter a number." << endl;
+            cout << "Invalid input! Please enter a number between 1-6." << endl;
             cin.clear();
-            cin.ignore(10000, '\n');
             choice = 0;
             continue;
         }
-
         switch (choice)
         {
         case 1:

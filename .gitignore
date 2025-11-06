@@ -16,4 +16,5 @@
 
 # Start of Selection
 *.exe
-# End of Selection
+# End of Selection.
+.vscode

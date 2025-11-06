@@ -1,0 +1,44 @@
+@startuml
+!theme plain
+
+' UML Class Diagram - Pharmacy Marketplace
+' Focus: Classes and Relationships Only
+
+class Medicine {
+}
+
+class Tablet {
+}
+
+class Syrup {
+}
+
+class Shop {
+}
+
+class Marketplace {
+}
+
+class User {
+}
+
+class Retailer{
+}
+
+' Inheritance Relationships
+Medicine <|-- Tablet
+Medicine <|-- Syrup
+
+' Composition: Marketplace contains Shops (strong ownership)
+Marketplace *-- Shop : contains
+
+' Aggregation: Shop manages Medicine pointers (weak ownership)
+Shop o-- Medicine : manages
+
+' Dependency: Feature uses Marketplace
+User ..> Marketplace : uses
+
+
+' Dependency: Feature uses Marketplace
+Retailer ..> Marketplace : can sell
+@enduml
