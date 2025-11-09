@@ -343,6 +343,12 @@ void Marketplace::orderMedicine()
     std::cout << "Enter quantity: ";
     std::cin >> quantity;
 
+    if (quantity <= 0)
+    {
+        std::cout << "Invalid quantity! Please enter a positive number.\n";
+        return;
+    }
+
     // Get customer coordinates
     std::cout << "Enter your location (x y): ";
     if (!(std::cin >> customerX >> customerY))
@@ -353,42 +359,98 @@ void Marketplace::orderMedicine()
         return;
     }
 
-    bool found = false;
+    // First pass: Collect all shops that have the medicine with sufficient stock
+    int availableShops[5]; // Store shop indices
+    int availableCount = 0;
+    double baseCosts[5];
+    double deliveryCharges[5];
+    double totalCosts[5];
+    double distances[5];
+
     for (int i = 0; i < shopCount; i++)
     {
         int idx = shops[i].findMedicine(medName);
-        if (idx != -1)
+        if (idx != -1 && shops[i].getMedicine(idx)->canBuy(quantity))
         {
-            found = true;
-            std::cout << "\nFound at " << shops[i].name << "\n";
-            std::cout << "Price: $" << fixed << setprecision(2) << shops[i].getMedicine(idx)->getPrice() << " per unit\n";
-            std::cout << "Available: " << shops[i].getMedicine(idx)->getQuantity() << " units\n";
-
             // Calculate distance and delivery charge
             int shopX = shops[i].getX();
             int shopY = shops[i].getY();
             double distance = calculateDistance(customerX, customerY, shopX, shopY);
             double deliveryCharge = calculateDeliveryCharge(distance);
-
-            // Calculate base cost for logging
             double baseCost = shops[i].getMedicine(idx)->getPrice() * quantity;
             double totalCost = baseCost + deliveryCharge;
 
-            std::cout << "Shop location: (" << shopX << ", " << shopY << ")\n";
-            std::cout << "Your location: (" << customerX << ", " << customerY << ")\n";
-            std::cout << "Distance: " << fixed << setprecision(2) << distance << " units\n";
-
-            if (shops[i].buyMedicine(medName, quantity, deliveryCharge))
-            {
-                logOrder(medName, quantity, shops[i].name, customerX, customerY,
-                         shopX, shopY, distance, baseCost, deliveryCharge, totalCost);
-                return;
-            }
+            // Store shop information
+            availableShops[availableCount] = i;
+            baseCosts[availableCount] = baseCost;
+            deliveryCharges[availableCount] = deliveryCharge;
+            totalCosts[availableCount] = totalCost;
+            distances[availableCount] = distance;
+            availableCount++;
         }
     }
-    if (!found)
+
+    // If no shops found, show message and return
+    if (availableCount == 0)
     {
-        std::cout << "\nMedicine not found in shops.\n";
+        std::cout << "\nMedicine \"" << medName << "\" not found in any shop with sufficient stock.\n";
+        return;
+    }
+
+    // Display all available options
+    std::cout << "\n=== Available Options for \"" << medName << "\" (Quantity: " << quantity << ") ===\n";
+    std::cout << "Your location: (" << customerX << ", " << customerY << ")\n\n";
+
+    for (int i = 0; i < availableCount; i++)
+    {
+        int shopIdx = availableShops[i];
+        int medIdx = shops[shopIdx].findMedicine(medName);
+
+        std::cout << i + 1 << ". " << shops[shopIdx].name << "\n";
+        std::cout << "   Price per unit: $" << fixed << setprecision(2)
+                  << shops[shopIdx].getMedicine(medIdx)->getPrice() << "\n";
+        std::cout << "   Available stock: " << shops[shopIdx].getMedicine(medIdx)->getQuantity() << " units\n";
+        std::cout << "   Shop location: (" << shops[shopIdx].getX() << ", "
+                  << shops[shopIdx].getY() << ")\n";
+        std::cout << "   Distance: " << fixed << setprecision(2) << distances[i] << " units\n";
+        std::cout << "   Base cost: $" << fixed << setprecision(2) << baseCosts[i] << "\n";
+        std::cout << "   Delivery charge: $" << fixed << setprecision(2) << deliveryCharges[i] << "\n";
+        std::cout << "   Total cost: $" << fixed << setprecision(2) << totalCosts[i] << "\n\n";
+    }
+
+    // Ask user to select a shop
+    std::cout << "Select a shop (1-" << availableCount << ") or 0 to cancel: ";
+    int choice;
+    if (!(std::cin >> choice) || choice < 0 || choice > availableCount)
+    {
+        std::cout << "Invalid selection! Order cancelled.\n";
+        std::cin.clear();
+        std::cin.ignore(10000, '\n');
+        return;
+    }
+
+    if (choice == 0)
+    {
+        std::cout << "Order cancelled.\n";
+        return;
+    }
+
+    // Process purchase from selected shop
+    int selectedShopIdx = availableShops[choice - 1];
+    int shopX = shops[selectedShopIdx].getX();
+    int shopY = shops[selectedShopIdx].getY();
+
+    std::cout << "\n=== Processing order from " << shops[selectedShopIdx].name << " ===\n";
+
+    if (shops[selectedShopIdx].buyMedicine(medName, quantity, deliveryCharges[choice - 1]))
+    {
+        logOrder(medName, quantity, shops[selectedShopIdx].name, customerX, customerY,
+                 shopX, shopY, distances[choice - 1], baseCosts[choice - 1],
+                 deliveryCharges[choice - 1], totalCosts[choice - 1]);
+    }
+    else
+    {
+        std::cout << "Purchase cancelled.\n";
     }
 }
 
