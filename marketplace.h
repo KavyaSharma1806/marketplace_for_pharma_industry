@@ -62,6 +62,8 @@ private:
     Medicine **medicines; // Array of pointers for polymorphism
     int capacity;
     int medicineCount;
+    int x; // Shop x coordinate
+    int y; // Shop y coordinate
 
 public:
     string name;
@@ -75,11 +77,21 @@ public:
     void addMedicine(string medName, double price, int quantity = 1, string type = "General");
     int findMedicine(string medName) const;
     void showInventory() const;
-    bool buyMedicine(string medName, int quantity = 1);
+    bool buyMedicine(string medName, int quantity = 1, double deliveryCharge = 0.0);
+    bool removeMedicine(string medName);
 
     // Getter methods for accessing medicines
     const Medicine *getMedicine(int index) const;
     int getMedicineCount() const;
+
+    // Getter methods for coordinates
+    int getX() const { return x; }
+    int getY() const { return y; }
+    void setCoordinates(int xCoord, int yCoord)
+    {
+        x = xCoord;
+        y = yCoord;
+    }
 };
 
 // MARK: Abstraction
@@ -97,6 +109,11 @@ private:
     Shop shops[5];
     int shopCount;
 
+    // Order logging function
+    void logOrder(const string &medName, int quantity, const string &shopName,
+                  int customerX, int customerY, int shopX, int shopY,
+                  double distance, double baseCost, double deliveryCharge, double totalCost) const;
+
 public:
     Marketplace();
     ~Marketplace();
@@ -104,6 +121,14 @@ public:
     void orderMedicine();
     void searchMedicine() const;
     void showAllShops() const;
+
+    // Distance and delivery calculation functions
+    double calculateDistance(int x1, int y1, int x2, int y2) const;
+    double calculateDeliveryCharge(double distance) const;
+
+    // Retailer functions
+    void listShopsForRetailer() const;
+    bool removeMedicineFromShop(int shopIndex, string medName);
 
     void addMedicineAndPersist(int shopIndex, string medName, double price, int quantity, const string &type, const string &filePath = "inventory.csv");
     void loadInventoryFromFile(const string &filePath = "inventory.csv");

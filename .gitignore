@@ -16,4 +16,5 @@
 
 # Start of Selection
 *.exe
+*.out
 # End of Selection
