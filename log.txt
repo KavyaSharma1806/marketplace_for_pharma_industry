@@ -1,0 +1,13 @@
+========================================
+Order Date: Mon Nov 10 00:54:47 2025
+Medicine: rahul
+Quantity: 1
+Shop: CityPharmacy
+Customer Location: (1, 7)
+Shop Location: (0, 0)
+Distance: 7.07 units
+Base Cost: $8.25
+Delivery Charge: $3.54
+Total Cost: $11.79
+========================================
+

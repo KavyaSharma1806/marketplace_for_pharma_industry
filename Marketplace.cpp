@@ -1,6 +1,5 @@
 #include "marketplace.h"
 #include <cmath>
-#include <ctime>
 
 using namespace std;
 
@@ -63,7 +62,7 @@ Shop::Shop()
 {
     name = "";
     medicineCount = 0;
-    capacity = 10; // Initial capacity
+    capacity = 10;
     medicines = new Medicine *[capacity];
     x = 0;
     y = 0;
@@ -73,7 +72,7 @@ Shop::Shop(string shopName)
 {
     name = shopName;
     medicineCount = 0;
-    capacity = 10; // Initial capacity
+    capacity = 10;
     medicines = new Medicine *[capacity];
     x = 0;
     y = 0;
@@ -88,7 +87,6 @@ Shop::Shop(const Shop &other)
     x = other.x;
     y = other.y;
 
-    // Copy all medicines (deep copy)
     for (int i = 0; i < medicineCount; i++)
     {
         medicines[i] = new Medicine(*other.medicines[i]);
@@ -97,16 +95,15 @@ Shop::Shop(const Shop &other)
 
 Shop &Shop::operator=(const Shop &other)
 {
-    if (this != &other) // Avoid self-assignment
+    if (this != &other)
     {
-        // Delete existing medicines
+
         for (int i = 0; i < medicineCount; i++)
         {
             delete medicines[i];
         }
         delete[] medicines;
 
-        // Copy data
         name = other.name;
         medicineCount = other.medicineCount;
         capacity = other.capacity;
@@ -114,7 +111,6 @@ Shop &Shop::operator=(const Shop &other)
         x = other.x;
         y = other.y;
 
-        // Copy all medicines (deep copy)
         for (int i = 0; i < medicineCount; i++)
         {
             medicines[i] = new Medicine(*other.medicines[i]);
@@ -139,7 +135,6 @@ void Shop::addMedicine(string medName, double price, int quantity, string type)
         int newCapacity = capacity * 2;
         Medicine **newMedicines = new Medicine *[newCapacity];
 
-        // Copy existing medicines
         for (int i = 0; i < medicineCount; i++)
         {
             newMedicines[i] = medicines[i];
@@ -150,7 +145,6 @@ void Shop::addMedicine(string medName, double price, int quantity, string type)
         capacity = newCapacity;
     }
 
-    // Create appropriate medicine type based on type string
     if (type == "Tablet")
         medicines[medicineCount] = new Tablet(medName, price, quantity);
     else if (type == "Syrup")
@@ -213,13 +207,11 @@ bool Shop::removeMedicine(string medName)
     int index = findMedicine(medName);
     if (index == -1)
     {
-        return false; // Medicine not found
+        return false;
     }
 
-    // Delete the medicine object
     delete medicines[index];
 
-    // Shift remaining medicines to fill the gap
     for (int i = index; i < medicineCount - 1; i++)
     {
         medicines[i] = medicines[i + 1];
@@ -229,7 +221,6 @@ bool Shop::removeMedicine(string medName)
     return true;
 }
 
-// Getter methods for accessing medicines
 const Medicine *Shop::getMedicine(int index) const
 {
     return medicines[index];
@@ -246,17 +237,17 @@ Marketplace::Marketplace()
     shopCount = 3;
 
     shops[0] = Shop("MediCare");
-    shops[0].setCoordinates(2, 4); // Hardcoded shop coordinates
+    shops[0].setCoordinates(2, 4);
     shops[0].addMedicine("Paracetamol", 5.50, 50, "Tablet");
     shops[0].addMedicine("Ibuprofen", 8.50, 30, "Tablet");
 
     shops[1] = Shop("HealthPlus");
-    shops[1].setCoordinates(3, 5); // Hardcoded shop coordinates
+    shops[1].setCoordinates(3, 5);
     shops[1].addMedicine("Amoxicillin", 16.00, 25, "Tablet");
     shops[1].addMedicine("Cetirizine", 12.50, 20, "Tablet");
 
     shops[2] = Shop("QuickMeds");
-    shops[2].setCoordinates(1, 3); // Hardcoded shop coordinates
+    shops[2].setCoordinates(1, 3);
     shops[2].addMedicine("Metformin", 19.00, 35, "Tablet");
     shops[2].addMedicine("Insulin", 45.00, 10, "General");
 }
@@ -266,7 +257,7 @@ Marketplace::~Marketplace() {}
 // MARK: Distance and Delivery Calculation
 double Marketplace::calculateDistance(int x1, int y1, int x2, int y2) const
 {
-    // Euclidean distance: sqrt((x2-x1)² + (y2-y1)²)
+
     int dx = x2 - x1;
     int dy = y2 - y1;
     return sqrt(dx * dx + dy * dy);
@@ -274,7 +265,7 @@ double Marketplace::calculateDistance(int x1, int y1, int x2, int y2) const
 
 double Marketplace::calculateDeliveryCharge(double distance) const
 {
-    // $0.5 per unit distance
+
     return distance * 0.5;
 }
 
@@ -289,19 +280,8 @@ void Marketplace::logOrder(const string &medName, int quantity, const string &sh
         return;
     }
 
-    // Get current timestamp
-    time_t now = time(0);
-    char *dt = ctime(&now);
-    string timestamp = dt;
-    // Remove newline from timestamp
-    if (!timestamp.empty() && timestamp.back() == '\n')
-    {
-        timestamp.pop_back();
-    }
-
-    // Write order details in a readable format
     logFile << "========================================\n";
-    logFile << "Order Date: " << timestamp << "\n";
+    logFile << "Order Recorded In: log.txt\n";
     logFile << "Medicine: " << medName << "\n";
     logFile << "Quantity: " << quantity << "\n";
     logFile << "Shop: " << shopName << "\n";
@@ -325,7 +305,7 @@ void addShop(Marketplace &market, const string &shopName)
         return;
     }
     market.shops[market.shopCount] = Shop(shopName);
-    market.shops[market.shopCount].setCoordinates(0, 0); // Default coordinates for new shops
+    market.shops[market.shopCount].setCoordinates(0, 0);
     market.shopCount++;
     cout << "Shop added: " << shopName << "\n";
 }
@@ -349,7 +329,7 @@ void Marketplace::orderMedicine()
         return;
     }
 
-    // Get customer coordinates
+    // MARK: Coordinates
     std::cout << "Enter your location (x y): ";
     if (!(std::cin >> customerX >> customerY))
     {
@@ -359,8 +339,7 @@ void Marketplace::orderMedicine()
         return;
     }
 
-    // First pass: Collect all shops that have the medicine with sufficient stock
-    int availableShops[5]; // Store shop indices
+    int availableShops[5];
     int availableCount = 0;
     double baseCosts[5];
     double deliveryCharges[5];
@@ -372,7 +351,7 @@ void Marketplace::orderMedicine()
         int idx = shops[i].findMedicine(medName);
         if (idx != -1 && shops[i].getMedicine(idx)->canBuy(quantity))
         {
-            // Calculate distance and delivery charge
+
             int shopX = shops[i].getX();
             int shopY = shops[i].getY();
             double distance = calculateDistance(customerX, customerY, shopX, shopY);
@@ -380,7 +359,6 @@ void Marketplace::orderMedicine()
             double baseCost = shops[i].getMedicine(idx)->getPrice() * quantity;
             double totalCost = baseCost + deliveryCharge;
 
-            // Store shop information
             availableShops[availableCount] = i;
             baseCosts[availableCount] = baseCost;
             deliveryCharges[availableCount] = deliveryCharge;
@@ -390,14 +368,90 @@ void Marketplace::orderMedicine()
         }
     }
 
-    // If no shops found, show message and return
     if (availableCount == 0)
     {
-        std::cout << "\nMedicine \"" << medName << "\" not found in any shop with sufficient stock.\n";
+        double lowestPrice = -1.0;
+        bool medicineExists = false;
+
+        for (int i = 0; i < shopCount; i++)
+        {
+            int idx = shops[i].findMedicine(medName);
+            if (idx != -1)
+            {
+                medicineExists = true;
+                double price = shops[i].getMedicine(idx)->getPrice();
+                if (lowestPrice < 0 || price < lowestPrice)
+                {
+                    lowestPrice = price;
+                }
+            }
+        }
+
+        double baseMarketPrice = 0.0;
+
+        if (medicineExists)
+        {
+            baseMarketPrice = lowestPrice;
+            std::cout << "\nMedicine \"" << medName << "\" not found in any shop with sufficient stock.\n";
+        }
+        else
+        {
+            std::cout << "\nMedicine \"" << medName << "\" not found in any shop.\n";
+        }
+
+        std::cout << "Not available in the market .However, we can arrange it from a wholesaler at 2x the market price.\n\n";
+
+        double wholesalerPricePerUnit = 100;
+        double wholesalerBaseCost = wholesalerPricePerUnit * quantity;
+
+        int wholesalerX = 0;
+        int wholesalerY = 0;
+        double wholesalerDistance = calculateDistance(customerX, customerY, wholesalerX, wholesalerY);
+        double wholesalerDeliveryCharge = calculateDeliveryCharge(wholesalerDistance);
+        double wholesalerTotalCost = wholesalerBaseCost + wholesalerDeliveryCharge;
+
+        std::cout << "=== Wholesaler Option ===\n";
+        std::cout << "Medicine: " << medName << "\n";
+        std::cout << "Quantity: " << quantity << "\n";
+        if (medicineExists)
+        {
+            std::cout << "Market price (lowest found): $" << fixed << setprecision(2) << baseMarketPrice << " per unit\n";
+        }
+        else
+        {
+            std::cout << "Estimated market price: $" << fixed << setprecision(2) << baseMarketPrice << " per unit\n";
+        }
+        std::cout << "Wholesaler price: $" << fixed << setprecision(2) << wholesalerPricePerUnit << " per unit (2x market price)\n";
+        std::cout << "Base cost: $" << fixed << setprecision(2) << wholesalerBaseCost << "\n";
+        std::cout << "Delivery charge: $" << fixed << setprecision(2) << wholesalerDeliveryCharge << "\n";
+        std::cout << "Total cost: $" << fixed << setprecision(2) << wholesalerTotalCost << "\n\n";
+
+        std::cout << "Would you like to purchase from the wholesaler? (y/n): ";
+        char confirm;
+        std::cin >> confirm;
+
+        if (confirm == 'y' || confirm == 'Y')
+        {
+            std::cout << "\n=== Processing order from Wholesaler ===\n";
+            std::cout << "Base Cost: $" << fixed << setprecision(2) << wholesalerBaseCost << "\n";
+            if (wholesalerDeliveryCharge > 0)
+            {
+                std::cout << "Delivery Charge: $" << fixed << setprecision(2) << wholesalerDeliveryCharge << "\n";
+            }
+            std::cout << "Total Cost: $" << fixed << setprecision(2) << wholesalerTotalCost << "\n";
+            std::cout << "Purchase successful!\n";
+
+            logOrder(medName, quantity, "Wholesaler", customerX, customerY,
+                     wholesalerX, wholesalerY, wholesalerDistance, wholesalerBaseCost,
+                     wholesalerDeliveryCharge, wholesalerTotalCost);
+        }
+        else
+        {
+            std::cout << "Purchase cancelled.\n";
+        }
         return;
     }
 
-    // Display all available options
     std::cout << "\n=== Available Options for \"" << medName << "\" (Quantity: " << quantity << ") ===\n";
     std::cout << "Your location: (" << customerX << ", " << customerY << ")\n\n";
 
@@ -418,7 +472,6 @@ void Marketplace::orderMedicine()
         std::cout << "   Total cost: $" << fixed << setprecision(2) << totalCosts[i] << "\n\n";
     }
 
-    // Ask user to select a shop
     std::cout << "Select a shop (1-" << availableCount << ") or 0 to cancel: ";
     int choice;
     if (!(std::cin >> choice) || choice < 0 || choice > availableCount)
@@ -435,7 +488,6 @@ void Marketplace::orderMedicine()
         return;
     }
 
-    // Process purchase from selected shop
     int selectedShopIdx = availableShops[choice - 1];
     int shopX = shops[selectedShopIdx].getX();
     int shopY = shops[selectedShopIdx].getY();
@@ -504,12 +556,12 @@ bool Marketplace::removeMedicineFromShop(int shopIndex, string medName)
 {
     if (shopIndex < 0 || shopIndex >= shopCount)
     {
-        return false; // Invalid shop index
+        return false;
     }
     return shops[shopIndex].removeMedicine(medName);
 }
 
-// MARK: File I/O + Composition interaction
+// MARK: File I/O
 void Marketplace::addMedicineAndPersist(int shopIndex, string medName, double price, int quantity, const string &type, const string &filePath)
 {
     if (shopIndex < 0 || shopIndex >= shopCount)
@@ -544,7 +596,7 @@ void Marketplace::loadInventoryFromFile(const string &filePath)
     while (getline(in, line))
     {
         if (line.empty())
-            continue; // Skip empty lines
+            continue;
 
         stringstream ss(line);
         string shopName, medName, priceStr, qtyStr, typeStr;
@@ -561,7 +613,7 @@ void Marketplace::loadInventoryFromFile(const string &filePath)
             }
 
             if (medName.empty() || priceStr.empty() || qtyStr.empty())
-                continue; // Skip invalid entries
+                continue;
 
             try
             {
@@ -581,15 +633,21 @@ void Marketplace::loadInventoryFromFile(const string &filePath)
 
                 if (shopIndex == -1 && shopCount < 5)
                 {
-                    // Create new shop
                     shops[shopCount] = Shop(shopName);
-                    shops[shopCount].setCoordinates(0, 0); // Default coordinates for shops loaded from file
+                    shops[shopCount].setCoordinates(0, 0);
                     shopIndex = shopCount;
                     shopCount++;
                 }
 
                 if (shopIndex != -1)
                 {
+                    // Check if medicine already exists
+                    int existingMedIndex = shops[shopIndex].findMedicine(medName);
+                    if (existingMedIndex != -1)
+                    {
+                        // Medicine already exists, skip to avoid duplicate
+                        continue;
+                    }
                     shops[shopIndex].addMedicine(medName, price, quantity, typeStr);
                 }
             }
