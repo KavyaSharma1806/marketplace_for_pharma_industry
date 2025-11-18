@@ -1,18 +1,31 @@
 #include "marketplace.h"
 #include <cmath>
+#include <vector>
 
 using namespace std;
 
-// MARK: Constructor/Destructor
-Medicine::Medicine(string n, double p, int q, string t) : name(n), price(p), quantity(q), type(t) {}
+// ==================== Medicine Class ====================
+Medicine::Medicine(string n, double p, int q, string t) 
+    : name(n), price(p), quantity(q), type(t) {}
+
 Medicine::~Medicine() {}
+
 string Medicine::getName() const { return name; }
 double Medicine::getPrice() const { return price; }
 int Medicine::getQuantity() const { return quantity; }
-bool Medicine::canBuy(int amount) const { return quantity >= amount; }
-void Medicine::reduceStock(int amount) { quantity -= amount; }
 
-// MARK: Operator Overloading
+bool Medicine::canBuy(int amount) const 
+{ 
+    return quantity >= amount; 
+}
+
+void Medicine::reduceStock(int amount) 
+{ 
+    if (amount <= quantity) {
+        quantity -= amount; 
+    }
+}
+
 ostream &operator<<(ostream &os, const Medicine &m)
 {
     os << m.name << " - $" << fixed << setprecision(2) << m.price
@@ -22,13 +35,12 @@ ostream &operator<<(ostream &os, const Medicine &m)
 
 void display(const Medicine &m)
 {
-    std::cout << m << "\n";
+    cout << m << "\n";
 }
 
 void Medicine::displayInfo() const
 {
-
-    std::cout << *this << "\n";
+    cout << *this << "\n";
 }
 
 string Medicine::getCategory() const
@@ -36,28 +48,35 @@ string Medicine::getCategory() const
     return "Medicine";
 }
 
-Tablet::Tablet(const string &n, double p, int q) : Medicine(n, p, q, "Tablet") {}
+// ==================== Tablet Class ====================
+Tablet::Tablet(const string &n, double p, int q) 
+    : Medicine(n, p, q, "Tablet") {}
+
 Tablet::~Tablet() {}
+
 void Tablet::displayInfo() const
 {
     cout << "[Tablet] ";
-
     Medicine::displayInfo();
 }
+
 string Tablet::getCategory() const { return "Tablet"; }
 
-// MARK: SYRUP
-Syrup::Syrup(const string &n, double p, int q) : Medicine(n, p, q, "Syrup") {}
+// ==================== Syrup Class ====================
+Syrup::Syrup(const string &n, double p, int q) 
+    : Medicine(n, p, q, "Syrup") {}
+
 Syrup::~Syrup() {}
+
 void Syrup::displayInfo() const
 {
     cout << "[Syrup]  ";
-
     Medicine::displayInfo();
 }
+
 string Syrup::getCategory() const { return "Syrup"; }
 
-// MARK: Constructor/Destructor
+// ==================== Shop Class ====================
 Shop::Shop()
 {
     name = "";
@@ -83,13 +102,20 @@ Shop::Shop(const Shop &other)
     name = other.name;
     medicineCount = other.medicineCount;
     capacity = other.capacity;
-    medicines = new Medicine *[capacity];
     x = other.x;
     y = other.y;
+    medicines = new Medicine *[capacity];
 
     for (int i = 0; i < medicineCount; i++)
     {
-        medicines[i] = new Medicine(*other.medicines[i]);
+        // Deep copy each medicine based on its type
+        if (other.medicines[i]->getCategory() == "Tablet") {
+            medicines[i] = new Tablet(*dynamic_cast<Tablet*>(other.medicines[i]));
+        } else if (other.medicines[i]->getCategory() == "Syrup") {
+            medicines[i] = new Syrup(*dynamic_cast<Syrup*>(other.medicines[i]));
+        } else {
+            medicines[i] = new Medicine(*other.medicines[i]);
+        }
     }
 }
 
@@ -97,19 +123,20 @@ Shop &Shop::operator=(const Shop &other)
 {
     if (this != &other)
     {
-
+        // Clean up existing memory
         for (int i = 0; i < medicineCount; i++)
         {
             delete medicines[i];
         }
         delete[] medicines;
 
+        // Copy data from other
         name = other.name;
         medicineCount = other.medicineCount;
         capacity = other.capacity;
-        medicines = new Medicine *[capacity];
         x = other.x;
         y = other.y;
+        medicines = new Medicine *[capacity];
 
         for (int i = 0; i < medicineCount; i++)
         {
@@ -130,6 +157,17 @@ Shop::~Shop()
 
 void Shop::addMedicine(string medName, double price, int quantity, string type)
 {
+    // First check if medicine already exists
+    int existingIndex = findMedicine(medName);
+    if (existingIndex != -1)
+    {
+        cout << "Medicine '" << medName << "' already exists in inventory!\n";
+        cout << "Current stock: " << medicines[existingIndex]->getQuantity() << " units\n";
+        cout << "Use 'Refill Stock' option to add more quantity.\n";
+        return;
+    }
+
+    // Expand capacity if needed
     if (medicineCount >= capacity)
     {
         int newCapacity = capacity * 2;
@@ -145,6 +183,7 @@ void Shop::addMedicine(string medName, double price, int quantity, string type)
         capacity = newCapacity;
     }
 
+    // Create the right type of medicine
     if (type == "Tablet")
         medicines[medicineCount] = new Tablet(medName, price, quantity);
     else if (type == "Syrup")
@@ -153,6 +192,52 @@ void Shop::addMedicine(string medName, double price, int quantity, string type)
         medicines[medicineCount] = new Medicine(medName, price, quantity, type);
 
     medicineCount++;
+}
+
+bool Shop::refillStock(string medName, int additionalQuantity)
+{
+    int index = findMedicine(medName);
+    if (index == -1)
+    {
+        cout << "Medicine '" << medName << "' not found in inventory!\n";
+        cout << "Please add it as a new medicine first.\n";
+        return false;
+    }
+
+    if (additionalQuantity <= 0)
+    {
+        cout << "Invalid quantity! Please enter a positive number.\n";
+        return false;
+    }
+
+    // Access private quantity through a public method
+    // We need to add the quantity to existing stock
+    int currentStock = medicines[index]->getQuantity();
+    
+    // We'll need to update the Medicine class to support adding stock
+    // For now, we can work around by creating a new medicine with updated quantity
+    string name = medicines[index]->getName();
+    double price = medicines[index]->getPrice();
+    string type = medicines[index]->getType();
+    string category = medicines[index]->getCategory();
+    int newQuantity = currentStock + additionalQuantity;
+
+    // Delete old medicine and create new one with updated quantity
+    delete medicines[index];
+    
+    if (category == "Tablet")
+        medicines[index] = new Tablet(name, price, newQuantity);
+    else if (category == "Syrup")
+        medicines[index] = new Syrup(name, price, newQuantity);
+    else
+        medicines[index] = new Medicine(name, price, newQuantity, type);
+
+    cout << "Stock refilled successfully!\n";
+    cout << "Previous stock: " << currentStock << " units\n";
+    cout << "Added: " << additionalQuantity << " units\n";
+    cout << "New stock: " << newQuantity << " units\n";
+    
+    return true;
 }
 
 int Shop::findMedicine(string medName) const
@@ -167,10 +252,10 @@ int Shop::findMedicine(string medName) const
 
 void Shop::showInventory() const
 {
-    std::cout << "\n=== " << name << " ===\n";
+    cout << "\n=== " << name << " ===\n";
     for (int i = 0; i < medicineCount; i++)
     {
-        std::cout << "  ";
+        cout << "  ";
         medicines[i]->displayInfo();
     }
 }
@@ -178,27 +263,32 @@ void Shop::showInventory() const
 bool Shop::buyMedicine(string medName, int quantity, double deliveryCharge)
 {
     int index = findMedicine(medName);
-    if (index != -1 && medicines[index]->canBuy(quantity))
+    if (index == -1 || !medicines[index]->canBuy(quantity))
     {
-        double baseCost = medicines[index]->getPrice() * quantity;
-        double totalCost = baseCost + deliveryCharge;
-
-        std::cout << "Base Cost: $" << fixed << setprecision(2) << baseCost << "\n";
-        if (deliveryCharge > 0)
-        {
-            std::cout << "Delivery Charge: $" << fixed << setprecision(2) << deliveryCharge << "\n";
-        }
-        std::cout << "Total Cost: $" << fixed << setprecision(2) << totalCost << "\n";
-        std::cout << "Confirm purchase? (y/n): ";
-        char choice;
-        std::cin >> choice;
-        if (choice == 'y' || choice == 'Y')
-        {
-            medicines[index]->reduceStock(quantity);
-            std::cout << "Purchase successful!\n";
-            return true;
-        }
+        return false;
     }
+
+    double baseCost = medicines[index]->getPrice() * quantity;
+    double totalCost = baseCost + deliveryCharge;
+
+    cout << "Base Cost: $" << fixed << setprecision(2) << baseCost << "\n";
+    if (deliveryCharge > 0)
+    {
+        cout << "Delivery Charge: $" << fixed << setprecision(2) << deliveryCharge << "\n";
+    }
+    cout << "Total Cost: $" << fixed << setprecision(2) << totalCost << "\n";
+    cout << "Confirm purchase? (y/n): ";
+    
+    char choice;
+    cin >> choice;
+    
+    if (choice == 'y' || choice == 'Y')
+    {
+        medicines[index]->reduceStock(quantity);
+        cout << "Purchase successful!\n";
+        return true;
+    }
+    
     return false;
 }
 
@@ -212,6 +302,7 @@ bool Shop::removeMedicine(string medName)
 
     delete medicines[index];
 
+    // Shift remaining medicines
     for (int i = index; i < medicineCount - 1; i++)
     {
         medicines[i] = medicines[i + 1];
@@ -223,7 +314,10 @@ bool Shop::removeMedicine(string medName)
 
 const Medicine *Shop::getMedicine(int index) const
 {
-    return medicines[index];
+    if (index >= 0 && index < medicineCount) {
+        return medicines[index];
+    }
+    return nullptr;
 }
 
 int Shop::getMedicineCount() const
@@ -231,11 +325,12 @@ int Shop::getMedicineCount() const
     return medicineCount;
 }
 
-// MARK: Constructor/Destructor
+// ==================== Marketplace Class ====================
 Marketplace::Marketplace()
 {
     shopCount = 3;
 
+    // Initialize default shops with some basic inventory
     shops[0] = Shop("MediCare");
     shops[0].setCoordinates(2, 4);
     shops[0].addMedicine("Paracetamol", 5.50, 50, "Tablet");
@@ -254,10 +349,8 @@ Marketplace::Marketplace()
 
 Marketplace::~Marketplace() {}
 
-// MARK: Distance and Delivery Calculation
 double Marketplace::calculateDistance(int x1, int y1, int x2, int y2) const
 {
-
     int dx = x2 - x1;
     int dy = y2 - y1;
     return sqrt(dx * dx + dy * dy);
@@ -265,11 +358,9 @@ double Marketplace::calculateDistance(int x1, int y1, int x2, int y2) const
 
 double Marketplace::calculateDeliveryCharge(double distance) const
 {
-
     return distance * 0.5;
 }
 
-// MARK: Order Logging
 void Marketplace::logOrder(const string &medName, int quantity, const string &shopName,
                            int customerX, int customerY, int shopX, int shopY,
                            double distance, double baseCost, double deliveryCharge, double totalCost) const
@@ -277,11 +368,12 @@ void Marketplace::logOrder(const string &medName, int quantity, const string &sh
     ofstream logFile("log.txt", ios::app);
     if (!logFile)
     {
+        cerr << "Warning: Could not write to log file.\n";
         return;
     }
 
     logFile << "========================================\n";
-    logFile << "Order Recorded In: log.txt\n";
+    logFile << "Order Details\n";
     logFile << "Medicine: " << medName << "\n";
     logFile << "Quantity: " << quantity << "\n";
     logFile << "Shop: " << shopName << "\n";
@@ -296,49 +388,47 @@ void Marketplace::logOrder(const string &medName, int quantity, const string &sh
     logFile.close();
 }
 
-// MARK: Friend Function
 void addShop(Marketplace &market, const string &shopName)
 {
     if (market.shopCount >= 5)
     {
-        cout << "Cannot add more shops. Limit reached." << "\n";
+        cout << "Cannot add more shops. Maximum limit reached.\n";
         return;
     }
     market.shops[market.shopCount] = Shop(shopName);
     market.shops[market.shopCount].setCoordinates(0, 0);
     market.shopCount++;
-    cout << "Shop added: " << shopName << "\n";
+    cout << "Shop '" << shopName << "' added successfully.\n";
 }
 
-// MARK: Behavior
 void Marketplace::orderMedicine()
 {
     string medName;
     int quantity;
     int customerX, customerY;
 
-    std::cout << "\nEnter medicine name: ";
-    std::cin.ignore();
-    getline(std::cin, medName);
-    std::cout << "Enter quantity: ";
-    std::cin >> quantity;
+    cout << "\nEnter medicine name: ";
+    cin.ignore();
+    getline(cin, medName);
+    cout << "Enter quantity: ";
+    cin >> quantity;
 
     if (quantity <= 0)
     {
-        std::cout << "Invalid quantity! Please enter a positive number.\n";
+        cout << "Invalid quantity! Please enter a positive number.\n";
         return;
     }
 
-    // MARK: Coordinates
-    std::cout << "Enter your location (x y): ";
-    if (!(std::cin >> customerX >> customerY))
+    cout << "Enter your location (x y): ";
+    if (!(cin >> customerX >> customerY))
     {
-        std::cout << "Invalid coordinates! Please enter two numbers.\n";
-        std::cin.clear();
-        std::cin.ignore(10000, '\n');
+        cout << "Invalid coordinates! Please enter two numbers.\n";
+        cin.clear();
+        cin.ignore(10000, '\n');
         return;
     }
 
+    // Find all shops that have this medicine in stock
     int availableShops[5];
     int availableCount = 0;
     double baseCosts[5];
@@ -351,7 +441,6 @@ void Marketplace::orderMedicine()
         int idx = shops[i].findMedicine(medName);
         if (idx != -1 && shops[i].getMedicine(idx)->canBuy(quantity))
         {
-
             int shopX = shops[i].getX();
             int shopY = shops[i].getY();
             double distance = calculateDistance(customerX, customerY, shopX, shopY);
@@ -368,11 +457,13 @@ void Marketplace::orderMedicine()
         }
     }
 
+    // Handle case where no shop has the medicine
     if (availableCount == 0)
     {
         double lowestPrice = -1.0;
         bool medicineExists = false;
 
+        // Check if the medicine exists anywhere
         for (int i = 0; i < shopCount; i++)
         {
             int idx = shops[i].findMedicine(medName);
@@ -387,21 +478,18 @@ void Marketplace::orderMedicine()
             }
         }
 
-        double baseMarketPrice = 0.0;
-
         if (medicineExists)
         {
-            baseMarketPrice = lowestPrice;
-            std::cout << "\nMedicine \"" << medName << "\" not found in any shop with sufficient stock.\n";
+            cout << "\nMedicine \"" << medName << "\" found but not enough stock in any shop.\n";
         }
         else
         {
-            std::cout << "\nMedicine \"" << medName << "\" not found in any shop.\n";
+            cout << "\nMedicine \"" << medName << "\" not available in any shop.\n";
         }
 
-        std::cout << "Not available in the market .However, we can arrange it from a wholesaler at 2x the market price.\n\n";
+        cout << "We can arrange it from a wholesaler at 2x the market price.\n\n";
 
-        double wholesalerPricePerUnit = 100;
+        double wholesalerPricePerUnit = medicineExists ? (lowestPrice * 2) : 100;
         double wholesalerBaseCost = wholesalerPricePerUnit * quantity;
 
         int wholesalerX = 0;
@@ -410,36 +498,32 @@ void Marketplace::orderMedicine()
         double wholesalerDeliveryCharge = calculateDeliveryCharge(wholesalerDistance);
         double wholesalerTotalCost = wholesalerBaseCost + wholesalerDeliveryCharge;
 
-        std::cout << "=== Wholesaler Option ===\n";
-        std::cout << "Medicine: " << medName << "\n";
-        std::cout << "Quantity: " << quantity << "\n";
+        cout << "=== Wholesaler Option ===\n";
+        cout << "Medicine: " << medName << "\n";
+        cout << "Quantity: " << quantity << "\n";
         if (medicineExists)
         {
-            std::cout << "Market price (lowest found): $" << fixed << setprecision(2) << baseMarketPrice << " per unit\n";
+            cout << "Market price: $" << fixed << setprecision(2) << lowestPrice << " per unit\n";
         }
-        else
-        {
-            std::cout << "Estimated market price: $" << fixed << setprecision(2) << baseMarketPrice << " per unit\n";
-        }
-        std::cout << "Wholesaler price: $" << fixed << setprecision(2) << wholesalerPricePerUnit << " per unit (2x market price)\n";
-        std::cout << "Base cost: $" << fixed << setprecision(2) << wholesalerBaseCost << "\n";
-        std::cout << "Delivery charge: $" << fixed << setprecision(2) << wholesalerDeliveryCharge << "\n";
-        std::cout << "Total cost: $" << fixed << setprecision(2) << wholesalerTotalCost << "\n\n";
+        cout << "Wholesaler price: $" << fixed << setprecision(2) << wholesalerPricePerUnit << " per unit\n";
+        cout << "Base cost: $" << fixed << setprecision(2) << wholesalerBaseCost << "\n";
+        cout << "Delivery charge: $" << fixed << setprecision(2) << wholesalerDeliveryCharge << "\n";
+        cout << "Total cost: $" << fixed << setprecision(2) << wholesalerTotalCost << "\n\n";
 
-        std::cout << "Would you like to purchase from the wholesaler? (y/n): ";
+        cout << "Would you like to order from the wholesaler? (y/n): ";
         char confirm;
-        std::cin >> confirm;
+        cin >> confirm;
 
         if (confirm == 'y' || confirm == 'Y')
         {
-            std::cout << "\n=== Processing order from Wholesaler ===\n";
-            std::cout << "Base Cost: $" << fixed << setprecision(2) << wholesalerBaseCost << "\n";
+            cout << "\n=== Processing wholesaler order ===\n";
+            cout << "Base Cost: $" << fixed << setprecision(2) << wholesalerBaseCost << "\n";
             if (wholesalerDeliveryCharge > 0)
             {
-                std::cout << "Delivery Charge: $" << fixed << setprecision(2) << wholesalerDeliveryCharge << "\n";
+                cout << "Delivery Charge: $" << fixed << setprecision(2) << wholesalerDeliveryCharge << "\n";
             }
-            std::cout << "Total Cost: $" << fixed << setprecision(2) << wholesalerTotalCost << "\n";
-            std::cout << "Purchase successful!\n";
+            cout << "Total Cost: $" << fixed << setprecision(2) << wholesalerTotalCost << "\n";
+            cout << "Order placed successfully!\n";
 
             logOrder(medName, quantity, "Wholesaler", customerX, customerY,
                      wholesalerX, wholesalerY, wholesalerDistance, wholesalerBaseCost,
@@ -447,44 +531,45 @@ void Marketplace::orderMedicine()
         }
         else
         {
-            std::cout << "Purchase cancelled.\n";
+            cout << "Order cancelled.\n";
         }
         return;
     }
 
-    std::cout << "\n=== Available Options for \"" << medName << "\" (Quantity: " << quantity << ") ===\n";
-    std::cout << "Your location: (" << customerX << ", " << customerY << ")\n\n";
+    // Display available options
+    cout << "\n=== Available Options for \"" << medName << "\" (Quantity: " << quantity << ") ===\n";
+    cout << "Your location: (" << customerX << ", " << customerY << ")\n\n";
 
     for (int i = 0; i < availableCount; i++)
     {
         int shopIdx = availableShops[i];
         int medIdx = shops[shopIdx].findMedicine(medName);
 
-        std::cout << i + 1 << ". " << shops[shopIdx].name << "\n";
-        std::cout << "   Price per unit: $" << fixed << setprecision(2)
-                  << shops[shopIdx].getMedicine(medIdx)->getPrice() << "\n";
-        std::cout << "   Available stock: " << shops[shopIdx].getMedicine(medIdx)->getQuantity() << " units\n";
-        std::cout << "   Shop location: (" << shops[shopIdx].getX() << ", "
-                  << shops[shopIdx].getY() << ")\n";
-        std::cout << "   Distance: " << fixed << setprecision(2) << distances[i] << " units\n";
-        std::cout << "   Base cost: $" << fixed << setprecision(2) << baseCosts[i] << "\n";
-        std::cout << "   Delivery charge: $" << fixed << setprecision(2) << deliveryCharges[i] << "\n";
-        std::cout << "   Total cost: $" << fixed << setprecision(2) << totalCosts[i] << "\n\n";
+        cout << i + 1 << ". " << shops[shopIdx].name << "\n";
+        cout << "   Price per unit: $" << fixed << setprecision(2)
+             << shops[shopIdx].getMedicine(medIdx)->getPrice() << "\n";
+        cout << "   Available stock: " << shops[shopIdx].getMedicine(medIdx)->getQuantity() << " units\n";
+        cout << "   Shop location: (" << shops[shopIdx].getX() << ", "
+             << shops[shopIdx].getY() << ")\n";
+        cout << "   Distance: " << fixed << setprecision(2) << distances[i] << " units\n";
+        cout << "   Base cost: $" << fixed << setprecision(2) << baseCosts[i] << "\n";
+        cout << "   Delivery charge: $" << fixed << setprecision(2) << deliveryCharges[i] << "\n";
+        cout << "   Total cost: $" << fixed << setprecision(2) << totalCosts[i] << "\n\n";
     }
 
-    std::cout << "Select a shop (1-" << availableCount << ") or 0 to cancel: ";
+    cout << "Select a shop (1-" << availableCount << ") or 0 to cancel: ";
     int choice;
-    if (!(std::cin >> choice) || choice < 0 || choice > availableCount)
+    if (!(cin >> choice) || choice < 0 || choice > availableCount)
     {
-        std::cout << "Invalid selection! Order cancelled.\n";
-        std::cin.clear();
-        std::cin.ignore(10000, '\n');
+        cout << "Invalid selection! Order cancelled.\n";
+        cin.clear();
+        cin.ignore(10000, '\n');
         return;
     }
 
     if (choice == 0)
     {
-        std::cout << "Order cancelled.\n";
+        cout << "Order cancelled.\n";
         return;
     }
 
@@ -492,7 +577,7 @@ void Marketplace::orderMedicine()
     int shopX = shops[selectedShopIdx].getX();
     int shopY = shops[selectedShopIdx].getY();
 
-    std::cout << "\n=== Processing order from " << shops[selectedShopIdx].name << " ===\n";
+    cout << "\n=== Processing order from " << shops[selectedShopIdx].name << " ===\n";
 
     if (shops[selectedShopIdx].buyMedicine(medName, quantity, deliveryCharges[choice - 1]))
     {
@@ -502,19 +587,18 @@ void Marketplace::orderMedicine()
     }
     else
     {
-        std::cout << "Purchase cancelled.\n";
+        cout << "Purchase cancelled.\n";
     }
 }
 
-// MARK: Behavior (const)
 void Marketplace::searchMedicine() const
 {
     string medName;
-    std::cout << "\nEnter medicine name to search: ";
-    std::cin.ignore();
-    getline(std::cin, medName);
+    cout << "\nEnter medicine name to search: ";
+    cin.ignore();
+    getline(cin, medName);
 
-    std::cout << "\nSearch Results:\n";
+    cout << "\nSearch Results:\n";
     bool found = false;
     for (int i = 0; i < shopCount; i++)
     {
@@ -522,14 +606,14 @@ void Marketplace::searchMedicine() const
         if (index != -1)
         {
             found = true;
-            std::cout << shops[i].name << " - $" << fixed << setprecision(2)
-                      << shops[i].getMedicine(index)->getPrice()
-                      << " - Stock: " << shops[i].getMedicine(index)->getQuantity() << "\n";
+            cout << shops[i].name << " - $" << fixed << setprecision(2)
+                 << shops[i].getMedicine(index)->getPrice()
+                 << " - Stock: " << shops[i].getMedicine(index)->getQuantity() << "\n";
         }
     }
     if (!found)
     {
-        std::cout << "Medicine not found in shops.\n";
+        cout << "Medicine not found in any shop.\n";
     }
 }
 
@@ -541,15 +625,15 @@ void Marketplace::showAllShops() const
     }
 }
 
-// MARK: Retailer Functions
 void Marketplace::listShopsForRetailer() const
 {
-    std::cout << "\n=== Available Shops ===\n";
+    cout << "\n=== Available Shops ===\n";
     for (int i = 0; i < shopCount; i++)
     {
-        std::cout << i << ". " << shops[i].name << " (Location: " << shops[i].getX() << ", " << shops[i].getY() << ")\n";
+        cout << i << ". " << shops[i].name 
+             << " (Location: " << shops[i].getX() << ", " << shops[i].getY() << ")\n";
     }
-    std::cout << "======================\n";
+    cout << "======================\n";
 }
 
 bool Marketplace::removeMedicineFromShop(int shopIndex, string medName)
@@ -561,12 +645,31 @@ bool Marketplace::removeMedicineFromShop(int shopIndex, string medName)
     return shops[shopIndex].removeMedicine(medName);
 }
 
-// MARK: File I/O
-void Marketplace::addMedicineAndPersist(int shopIndex, string medName, double price, int quantity, const string &type, const string &filePath)
+bool Marketplace::refillStockInShop(int shopIndex, string medName, int additionalQuantity)
 {
     if (shopIndex < 0 || shopIndex >= shopCount)
     {
-        cout << "Invalid shop index." << "\n";
+        cout << "Invalid shop index.\n";
+        return false;
+    }
+    return shops[shopIndex].refillStock(medName, additionalQuantity);
+}
+
+void Marketplace::addMedicineAndPersist(int shopIndex, string medName, double price, 
+                                        int quantity, const string &type, const string &filePath)
+{
+    if (shopIndex < 0 || shopIndex >= shopCount)
+    {
+        cout << "Invalid shop index.\n";
+        return;
+    }
+
+    // Check if medicine already exists
+    int existingIndex = shops[shopIndex].findMedicine(medName);
+    if (existingIndex != -1)
+    {
+        cout << "Medicine '" << medName << "' already exists in this shop!\n";
+        cout << "Use 'Refill Stock' option instead to add more quantity.\n";
         return;
     }
 
@@ -575,12 +678,96 @@ void Marketplace::addMedicineAndPersist(int shopIndex, string medName, double pr
     ofstream out(filePath, ios::app);
     if (!out)
     {
-        cout << "Failed to open " << filePath << " for writing." << "\n";
+        cout << "Failed to open " << filePath << " for writing.\n";
         return;
     }
-    out << shops[shopIndex].name << "," << medName << "," << fixed << setprecision(2) << price << "," << quantity << "," << type << "\n";
+    out << shops[shopIndex].name << "," << medName << "," 
+        << fixed << setprecision(2) << price << "," 
+        << quantity << "," << type << "\n";
     out.close();
-    cout << "Item persisted to " << filePath << "\n";
+    cout << "Medicine added and saved to " << filePath << "\n";
+}
+
+void Marketplace::refillStockAndPersist(int shopIndex, string medName, int additionalQuantity, const string &filePath)
+{
+    if (shopIndex < 0 || shopIndex >= shopCount)
+    {
+        cout << "Invalid shop index.\n";
+        return;
+    }
+
+    // Check if medicine exists
+    int medIndex = shops[shopIndex].findMedicine(medName);
+    if (medIndex == -1)
+    {
+        cout << "Medicine '" << medName << "' not found in this shop!\n";
+        cout << "Please add it as a new medicine first.\n";
+        return;
+    }
+
+    // Refill the stock
+    if (!shops[shopIndex].refillStock(medName, additionalQuantity))
+    {
+        return;
+    }
+
+    // Update the CSV file by rewriting it
+    // First, read all current data
+    ifstream inFile(filePath);
+    vector<string> allLines;
+    string line;
+    
+    if (inFile.is_open())
+    {
+        while (getline(inFile, line))
+        {
+            allLines.push_back(line);
+        }
+        inFile.close();
+    }
+
+    // Now rewrite the file with updated quantities
+    ofstream outFile(filePath);
+    if (!outFile)
+    {
+        cout << "Warning: Could not update " << filePath << "\n";
+        return;
+    }
+
+    for (const string &csvLine : allLines)
+    {
+        stringstream ss(csvLine);
+        string shopName, med, priceStr, qtyStr, typeStr;
+        
+        if (getline(ss, shopName, ',') &&
+            getline(ss, med, ',') &&
+            getline(ss, priceStr, ',') &&
+            getline(ss, qtyStr, ','))
+        {
+            if (!getline(ss, typeStr))
+            {
+                typeStr = "General";
+            }
+
+            // Check if this is the line we need to update
+            if (shopName == shops[shopIndex].name && med == medName)
+            {
+                // Get the updated quantity
+                const Medicine *updatedMed = shops[shopIndex].getMedicine(medIndex);
+                outFile << shopName << "," << med << "," 
+                       << fixed << setprecision(2) << updatedMed->getPrice() << "," 
+                       << updatedMed->getQuantity() << "," << typeStr << "\n";
+            }
+            else
+            {
+                // Write the original line
+                outFile << csvLine << "\n";
+            }
+        }
+    }
+    
+    outFile.close();
+    cout << "Stock updated in " << filePath << "\n";
 }
 
 void Marketplace::loadInventoryFromFile(const string &filePath)
@@ -588,7 +775,7 @@ void Marketplace::loadInventoryFromFile(const string &filePath)
     ifstream in(filePath);
     if (!in)
     {
-        cout << "Could not open " << filePath << " for reading. Starting with default inventory." << "\n";
+        cout << "Could not open " << filePath << ". Using default inventory.\n";
         return;
     }
 
@@ -606,7 +793,6 @@ void Marketplace::loadInventoryFromFile(const string &filePath)
             getline(ss, priceStr, ',') &&
             getline(ss, qtyStr, ','))
         {
-            // Optional type field (5th column)
             if (!getline(ss, typeStr))
             {
                 typeStr = "General";
@@ -620,7 +806,7 @@ void Marketplace::loadInventoryFromFile(const string &filePath)
                 double price = stod(priceStr);
                 int quantity = stoi(qtyStr);
 
-                // Find or create shop
+                // Find the shop or create it
                 int shopIndex = -1;
                 for (int i = 0; i < shopCount; i++)
                 {
@@ -641,14 +827,12 @@ void Marketplace::loadInventoryFromFile(const string &filePath)
 
                 if (shopIndex != -1)
                 {
-                    // Check if medicine already exists
+                    // Check for duplicates
                     int existingMedIndex = shops[shopIndex].findMedicine(medName);
-                    if (existingMedIndex != -1)
+                    if (existingMedIndex == -1)
                     {
-                        // Medicine already exists, skip to avoid duplicate
-                        continue;
+                        shops[shopIndex].addMedicine(medName, price, quantity, typeStr);
                     }
-                    shops[shopIndex].addMedicine(medName, price, quantity, typeStr);
                 }
             }
             catch (const exception &e)
