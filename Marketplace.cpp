@@ -641,11 +641,9 @@ void Marketplace::loadInventoryFromFile(const string &filePath)
 
                 if (shopIndex != -1)
                 {
-                    // Check if medicine already exists
                     int existingMedIndex = shops[shopIndex].findMedicine(medName);
                     if (existingMedIndex != -1)
                     {
-                        // Medicine already exists, skip to avoid duplicate
                         continue;
                     }
                     shops[shopIndex].addMedicine(medName, price, quantity, typeStr);
