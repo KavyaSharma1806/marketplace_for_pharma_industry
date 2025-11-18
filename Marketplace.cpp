@@ -4,9 +4,10 @@
 
 using namespace std;
 
-// ==================== Medicine Class ====================
-Medicine::Medicine(string n, double p, int q, string t) 
-    : name(n), price(p), quantity(q), type(t) {}
+Medicine::Medicine(string n, double p, int q, string t) // MARK: abstraction
+    : name(n), price(p), quantity(q), type(t)
+{
+}
 
 Medicine::~Medicine() {}
 
@@ -14,15 +15,16 @@ string Medicine::getName() const { return name; }
 double Medicine::getPrice() const { return price; }
 int Medicine::getQuantity() const { return quantity; }
 
-bool Medicine::canBuy(int amount) const 
-{ 
-    return quantity >= amount; 
+bool Medicine::canBuy(int amount) const
+{
+    return quantity >= amount;
 }
 
-void Medicine::reduceStock(int amount) 
-{ 
-    if (amount <= quantity) {
-        quantity -= amount; 
+void Medicine::reduceStock(int amount)
+{
+    if (amount <= quantity)
+    {
+        quantity -= amount;
     }
 }
 
@@ -48,13 +50,14 @@ string Medicine::getCategory() const
     return "Medicine";
 }
 
-// ==================== Tablet Class ====================
-Tablet::Tablet(const string &n, double p, int q) 
-    : Medicine(n, p, q, "Tablet") {}
+Tablet::Tablet(const string &n, double p, int q) // MARK: inheritance
+    : Medicine(n, p, q, "Tablet")
+{
+}
 
 Tablet::~Tablet() {}
 
-void Tablet::displayInfo() const
+void Tablet::displayInfo() const // MARK: polymorphism
 {
     cout << "[Tablet] ";
     Medicine::displayInfo();
@@ -62,13 +65,14 @@ void Tablet::displayInfo() const
 
 string Tablet::getCategory() const { return "Tablet"; }
 
-// ==================== Syrup Class ====================
-Syrup::Syrup(const string &n, double p, int q) 
-    : Medicine(n, p, q, "Syrup") {}
+Syrup::Syrup(const string &n, double p, int q) // MARK: inheritance
+    : Medicine(n, p, q, "Syrup")
+{
+}
 
 Syrup::~Syrup() {}
 
-void Syrup::displayInfo() const
+void Syrup::displayInfo() const // MARK: polymorphism
 {
     cout << "[Syrup]  ";
     Medicine::displayInfo();
@@ -76,7 +80,6 @@ void Syrup::displayInfo() const
 
 string Syrup::getCategory() const { return "Syrup"; }
 
-// ==================== Shop Class ====================
 Shop::Shop()
 {
     name = "";
@@ -87,7 +90,7 @@ Shop::Shop()
     y = 0;
 }
 
-Shop::Shop(string shopName)
+Shop::Shop(string shopName) // MARK: constructor overloading
 {
     name = shopName;
     medicineCount = 0;
@@ -97,7 +100,7 @@ Shop::Shop(string shopName)
     y = 0;
 }
 
-Shop::Shop(const Shop &other)
+Shop::Shop(const Shop &other) // MARK: copy constructor
 {
     name = other.name;
     medicineCount = other.medicineCount;
@@ -108,12 +111,16 @@ Shop::Shop(const Shop &other)
 
     for (int i = 0; i < medicineCount; i++)
     {
-        // Deep copy each medicine based on its type
-        if (other.medicines[i]->getCategory() == "Tablet") {
-            medicines[i] = new Tablet(*dynamic_cast<Tablet*>(other.medicines[i]));
-        } else if (other.medicines[i]->getCategory() == "Syrup") {
-            medicines[i] = new Syrup(*dynamic_cast<Syrup*>(other.medicines[i]));
-        } else {
+        if (other.medicines[i]->getCategory() == "Tablet")
+        {
+            medicines[i] = new Tablet(*dynamic_cast<Tablet *>(other.medicines[i]));
+        }
+        else if (other.medicines[i]->getCategory() == "Syrup")
+        {
+            medicines[i] = new Syrup(*dynamic_cast<Syrup *>(other.medicines[i]));
+        }
+        else
+        {
             medicines[i] = new Medicine(*other.medicines[i]);
         }
     }
@@ -123,14 +130,12 @@ Shop &Shop::operator=(const Shop &other)
 {
     if (this != &other)
     {
-        // Clean up existing memory
         for (int i = 0; i < medicineCount; i++)
         {
             delete medicines[i];
         }
         delete[] medicines;
 
-        // Copy data from other
         name = other.name;
         medicineCount = other.medicineCount;
         capacity = other.capacity;
@@ -157,7 +162,6 @@ Shop::~Shop()
 
 void Shop::addMedicine(string medName, double price, int quantity, string type)
 {
-    // First check if medicine already exists
     int existingIndex = findMedicine(medName);
     if (existingIndex != -1)
     {
@@ -167,7 +171,6 @@ void Shop::addMedicine(string medName, double price, int quantity, string type)
         return;
     }
 
-    // Expand capacity if needed
     if (medicineCount >= capacity)
     {
         int newCapacity = capacity * 2;
@@ -183,7 +186,6 @@ void Shop::addMedicine(string medName, double price, int quantity, string type)
         capacity = newCapacity;
     }
 
-    // Create the right type of medicine
     if (type == "Tablet")
         medicines[medicineCount] = new Tablet(medName, price, quantity);
     else if (type == "Syrup")
@@ -210,21 +212,16 @@ bool Shop::refillStock(string medName, int additionalQuantity)
         return false;
     }
 
-    // Access private quantity through a public method
-    // We need to add the quantity to existing stock
     int currentStock = medicines[index]->getQuantity();
-    
-    // We'll need to update the Medicine class to support adding stock
-    // For now, we can work around by creating a new medicine with updated quantity
+
     string name = medicines[index]->getName();
     double price = medicines[index]->getPrice();
     string type = medicines[index]->getType();
     string category = medicines[index]->getCategory();
     int newQuantity = currentStock + additionalQuantity;
 
-    // Delete old medicine and create new one with updated quantity
     delete medicines[index];
-    
+
     if (category == "Tablet")
         medicines[index] = new Tablet(name, price, newQuantity);
     else if (category == "Syrup")
@@ -236,7 +233,7 @@ bool Shop::refillStock(string medName, int additionalQuantity)
     cout << "Previous stock: " << currentStock << " units\n";
     cout << "Added: " << additionalQuantity << " units\n";
     cout << "New stock: " << newQuantity << " units\n";
-    
+
     return true;
 }
 
@@ -278,17 +275,17 @@ bool Shop::buyMedicine(string medName, int quantity, double deliveryCharge)
     }
     cout << "Total Cost: $" << fixed << setprecision(2) << totalCost << "\n";
     cout << "Confirm purchase? (y/n): ";
-    
+
     char choice;
     cin >> choice;
-    
+
     if (choice == 'y' || choice == 'Y')
     {
         medicines[index]->reduceStock(quantity);
         cout << "Purchase successful!\n";
         return true;
     }
-    
+
     return false;
 }
 
@@ -302,7 +299,6 @@ bool Shop::removeMedicine(string medName)
 
     delete medicines[index];
 
-    // Shift remaining medicines
     for (int i = index; i < medicineCount - 1; i++)
     {
         medicines[i] = medicines[i + 1];
@@ -314,7 +310,8 @@ bool Shop::removeMedicine(string medName)
 
 const Medicine *Shop::getMedicine(int index) const
 {
-    if (index >= 0 && index < medicineCount) {
+    if (index >= 0 && index < medicineCount)
+    {
         return medicines[index];
     }
     return nullptr;
@@ -325,12 +322,10 @@ int Shop::getMedicineCount() const
     return medicineCount;
 }
 
-// ==================== Marketplace Class ====================
 Marketplace::Marketplace()
 {
     shopCount = 3;
 
-    // Initialize default shops with some basic inventory
     shops[0] = Shop("MediCare");
     shops[0].setCoordinates(2, 4);
     shops[0].addMedicine("Paracetamol", 5.50, 50, "Tablet");
@@ -428,7 +423,6 @@ void Marketplace::orderMedicine()
         return;
     }
 
-    // Find all shops that have this medicine in stock
     int availableShops[5];
     int availableCount = 0;
     double baseCosts[5];
@@ -457,13 +451,11 @@ void Marketplace::orderMedicine()
         }
     }
 
-    // Handle case where no shop has the medicine
     if (availableCount == 0)
     {
         double lowestPrice = -1.0;
         bool medicineExists = false;
 
-        // Check if the medicine exists anywhere
         for (int i = 0; i < shopCount; i++)
         {
             int idx = shops[i].findMedicine(medName);
@@ -536,7 +528,6 @@ void Marketplace::orderMedicine()
         return;
     }
 
-    // Display available options
     cout << "\n=== Available Options for \"" << medName << "\" (Quantity: " << quantity << ") ===\n";
     cout << "Your location: (" << customerX << ", " << customerY << ")\n\n";
 
@@ -630,7 +621,7 @@ void Marketplace::listShopsForRetailer() const
     cout << "\n=== Available Shops ===\n";
     for (int i = 0; i < shopCount; i++)
     {
-        cout << i << ". " << shops[i].name 
+        cout << i << ". " << shops[i].name
              << " (Location: " << shops[i].getX() << ", " << shops[i].getY() << ")\n";
     }
     cout << "======================\n";
@@ -655,7 +646,7 @@ bool Marketplace::refillStockInShop(int shopIndex, string medName, int additiona
     return shops[shopIndex].refillStock(medName, additionalQuantity);
 }
 
-void Marketplace::addMedicineAndPersist(int shopIndex, string medName, double price, 
+void Marketplace::addMedicineAndPersist(int shopIndex, string medName, double price,
                                         int quantity, const string &type, const string &filePath)
 {
     if (shopIndex < 0 || shopIndex >= shopCount)
@@ -664,7 +655,6 @@ void Marketplace::addMedicineAndPersist(int shopIndex, string medName, double pr
         return;
     }
 
-    // Check if medicine already exists
     int existingIndex = shops[shopIndex].findMedicine(medName);
     if (existingIndex != -1)
     {
@@ -681,8 +671,8 @@ void Marketplace::addMedicineAndPersist(int shopIndex, string medName, double pr
         cout << "Failed to open " << filePath << " for writing.\n";
         return;
     }
-    out << shops[shopIndex].name << "," << medName << "," 
-        << fixed << setprecision(2) << price << "," 
+    out << shops[shopIndex].name << "," << medName << ","
+        << fixed << setprecision(2) << price << ","
         << quantity << "," << type << "\n";
     out.close();
     cout << "Medicine added and saved to " << filePath << "\n";
@@ -696,7 +686,6 @@ void Marketplace::refillStockAndPersist(int shopIndex, string medName, int addit
         return;
     }
 
-    // Check if medicine exists
     int medIndex = shops[shopIndex].findMedicine(medName);
     if (medIndex == -1)
     {
@@ -705,18 +694,15 @@ void Marketplace::refillStockAndPersist(int shopIndex, string medName, int addit
         return;
     }
 
-    // Refill the stock
     if (!shops[shopIndex].refillStock(medName, additionalQuantity))
     {
         return;
     }
 
-    // Update the CSV file by rewriting it
-    // First, read all current data
     ifstream inFile(filePath);
     vector<string> allLines;
     string line;
-    
+
     if (inFile.is_open())
     {
         while (getline(inFile, line))
@@ -726,7 +712,6 @@ void Marketplace::refillStockAndPersist(int shopIndex, string medName, int addit
         inFile.close();
     }
 
-    // Now rewrite the file with updated quantities
     ofstream outFile(filePath);
     if (!outFile)
     {
@@ -738,7 +723,7 @@ void Marketplace::refillStockAndPersist(int shopIndex, string medName, int addit
     {
         stringstream ss(csvLine);
         string shopName, med, priceStr, qtyStr, typeStr;
-        
+
         if (getline(ss, shopName, ',') &&
             getline(ss, med, ',') &&
             getline(ss, priceStr, ',') &&
@@ -749,23 +734,20 @@ void Marketplace::refillStockAndPersist(int shopIndex, string medName, int addit
                 typeStr = "General";
             }
 
-            // Check if this is the line we need to update
             if (shopName == shops[shopIndex].name && med == medName)
             {
-                // Get the updated quantity
                 const Medicine *updatedMed = shops[shopIndex].getMedicine(medIndex);
-                outFile << shopName << "," << med << "," 
-                       << fixed << setprecision(2) << updatedMed->getPrice() << "," 
-                       << updatedMed->getQuantity() << "," << typeStr << "\n";
+                outFile << shopName << "," << med << ","
+                        << fixed << setprecision(2) << updatedMed->getPrice() << ","
+                        << updatedMed->getQuantity() << "," << typeStr << "\n";
             }
             else
             {
-                // Write the original line
                 outFile << csvLine << "\n";
             }
         }
     }
-    
+
     outFile.close();
     cout << "Stock updated in " << filePath << "\n";
 }
@@ -827,11 +809,9 @@ void Marketplace::loadInventoryFromFile(const string &filePath)
 
                 if (shopIndex != -1)
                 {
-                    // Check if medicine already exists
                     int existingMedIndex = shops[shopIndex].findMedicine(medName);
                     if (existingMedIndex == -1)
                     {
-                        // Medicine already exists, skip to avoid duplicate
                         continue;
                     }
                 }
