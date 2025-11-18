@@ -11,3 +11,42 @@ Delivery Charge: $3.54
 Total Cost: $11.79
 ========================================
 
+========================================
+Order Details
+Medicine: Vitamin-C
+Quantity: 5
+Shop: CityPharmacy
+Customer Location: (2, -1)
+Shop Location: (0, 0)
+Distance: 2.24 units
+Base Cost: $30.00
+Delivery Charge: $1.12
+Total Cost: $31.12
+========================================
+
+========================================
+Order Details
+Medicine: Ibuprofen
+Quantity: 2
+Shop: CityPharmacy
+Customer Location: (2, 9)
+Shop Location: (0, 0)
+Distance: 9.22 units
+Base Cost: $16.50
+Delivery Charge: $4.61
+Total Cost: $21.11
+========================================
+
+========================================
+Order Details
+Medicine: rahul
+Quantity: 50
+Shop: Wholesaler
+Customer Location: (2, 5)
+Shop Location: (0, 0)
+Distance: 5.39 units
+Base Cost: $825.00
+Delivery Charge: $2.69
+Total Cost: $827.69
+========================================
+
